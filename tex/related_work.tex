@@ -1,0 +1,124 @@
+Different previous works are related to the goal of this dissertation: controlling perceived emotions in music composed by deep generative models. This chapter examines these related works, starting with a definition of emotion with respect to other affective phenomena and different models to classify emotion in music. Second, it presents different systems that generate music informed by an intended emotion. Third, it discusses conditional generative models to control different structural music features. Finally, it presents previous approaches to control LMs in NLP.
+
+\section{Models of Emotion}
+
+The study of affective phenomena has a very dense literature with multiple alternative theories \cite{ekkekakis2013measurement}. This section aims not to discuss all of them but to provide a definition of emotion helpful for designing neural generative models that can compose music with controllable emotion.  According to Williams et al. \cite{williams2015investigating}, the literature concerning the affective response to musical stimuli defines emotion as a short-lived episode, usually evoked by an identifiable stimulus event that can further influence or direct perception and action. Williams et al. \cite{williams2015investigating} also differentiate emotion from affect and mood, which are longer experiences commonly caused by emotions.
+
+There are two main types of models used to represent emotions: \emph{categorical} and \emph{dimensional} \cite{eerola2011comparison}. Categorical models use discrete labels to classify emotions. For example, Ekman's model \cite{ekman1992argument} divides human emotions into six basic categories: anger, disgust, fear, happiness, sadness, and surprise. This model builds on the assumption that an independent neural system subserves every discrete basic emotion \cite{eerola2011comparison}. Therefore, any other secondary emotion (e.g. rage, frustration, grief) can be derived from the basic ones. Some emotions are more present in the music domain and are evoked more easily than others. For example, it is more common for a person to feel happiness instead of disgust while listening to music. The Geneva Emotion Music Scale (GEMS) \cite{zentner2008emotions} is a categorical model specifically created to capture the emotions that are evoked by music. GEMS divides the space of musical emotions into nine categories: wonder, transcendence, tenderness, nostalgia, peacefulness, energy, joyful activation tension, and sadness. These nine emotions group a total of 45 specific labels.
+
+Dimensional models represent emotions as a set of coordinates in a low-dimensional space. For example, Russell \cite{russell1980circumplex} proposed a general-purpose dimensional model called \textit{circumplex}, which describes emotions using two orthogonal dimensions: valence and arousal. Instead of an independent neural system for every basic emotion, the circumplex model that all emotions arise from two independent neurophysiological systems dedicated to the processing of valence (positive--negative) and arousal (mild--intense). Figure \ref{fig:circumplex} shows a graphical representation of the circumplex model.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.7\textwidth]{imgs/related_work/circumplex.png}
+\caption{The circumplex model of emotion. The horizontal and vertical axes represent valence and arousal,
+respectively \cite{russell1980circumplex}.}
+\label{fig:circumplex}
+\end{figure}
+
+Independent of the model, emotions can be also classified as \textit{perceived} or \textit{felt}.
+A person \textit{perceives} an emotion when she objectively recognizes that emotion from her surroundings. For example, one can usually recognize others' emotions using expressed cues, including facial expression, tone of voice, and gestures. The same can happen when one listens to music, in that she recognizes the music as happy or sad using cues such as key, tempo, or volume. A person \textit{feels} an emotion when she actually experiences that emotion herself. For example, one typically experiences fear in response to someone else's anger. This example shows that a given perceived emotion can trigger a different felt emotion. Zentner, Grandjean, and Scherer \cite{zentner2008emotions} showed that emotions are less frequently felt in response to music than they are perceived as expressive properties of the music.
+
+\section{Affective Algorithmic Composition}
+
+Affective Algorithmic Composition (AAC) is a research field concerned about AMC methods that compose music to make a listener perceive or feel a given target emotion \cite{williams2015investigating}, with applications ranging from soundtrack generation \cite{williams2015dynamic} to sonification \cite{Chen2015} and music therapy \cite{miranda2011brain}. The AAC literature examined various methods, such as expert systems, evolutionary algorithms, Markov chains, and neural networks. Most of these methods are concerned with controlling perceived emotions. Therefore, they are normally evaluated with a qualitative analysis of generated samples or listening tests with human subjects. This section reviews some examples of each method, highlighting how they were applied and evaluated.
+% The target emotion can be informed synthetically (e.g. by a user or external system) or measured from the listener.
+
+\subsection{Expert systems}
+
+Expert systems are one of the most common methods of AAC. They encode knowledge from music composers to map musical features into a given emotion in a categorical or dimensional space. For example, Williams et al. \cite{williams2015dynamic} proposed a system to generate soundtracks for video games from a scene graph \footnote{A graph defining all the possible branching of scenes in the game.} annotated according to twelve categorical emotions derived from the circumplex model. A second-order Markov chain was used to learn melodies from a symbolic music dataset which are then transformed by an expert system to fit the annotated emotions in the graph. Each of the twelve emotions was mapped to a different configuration of five music parameters: rhythmic density, tempo, modality (major or minor), articulation, mean pitch range, and mean spectral range. These pre-defined configurations were used to transform the generated melodies. For example, a melody generated for a happy scene would be transformed to have high density, medium tempo, major mode, staccato articulation, medium mean pitch range, and high spectral range (clear timbre).
+Williams et al. \cite{williams2015dynamic} evaluated their system by qualitatively examining a few examples of generated pieces.
+
+TransProse \cite{davis2014generating} is an expert system that composes piano melodies for novels. It splits a given novel into sections and uses a lexicon-based approach to assign an emotion label to each section. TransProse composes a melody for each section by controlling the scale, tempo, octave, and notes of the melodies with pre-defined rules based on music theory. For example, the scale of a melody is determined by the sentiment of the section: positive sections are assigned a major scale, and negative sections are assigned a minor scale. TransProse was evaluated with a qualitatively analysis of nine music pieces generated by the system for nine respective novels.
+
+Scirea et al. \cite{scirea2017affective} presented a framework called MetaCompose designed to create background music for games in real-time. MetaCompose generates music by (i) randomly creating a chord sequence from a pre-defined chord progression graph, (ii) evolving a melody for this chord sequence using a genetic algorithm and (iii) producing an accompaniment, adding rhythm and arpeggio, for the melody/harmony combination. Finally, MetaCompose uses an expert system called \textit{Real-Time Affective Music Composer} to transform the final composition to match a given emotion in the circumplex model. This expert system controls four musical attributes: volume, timbre, rhythm, dissonance. For example, low arousal pieces were controlled to have lower volume. Scirea et al. \cite{scirea2017affective} evaluated each component of the MetaCompose with a pairwise listening test. The components of the system were systematically (one-by-one) switched off and replaced with random generation, generating different ``broken'' versions of the framework. These broken versions were paired with the complete framework and evaluated by human subjects according to four criteria: pleasantness, randomness, harmoniousness, and interestingness. For each criteria, the participants were asked to prefer one of two pieces, also having the options of \textit{neither} and \textit{both equally}.
+
+\subsection{Evolutionary Algorithms}
+
+To control emotions in music generated with EAs, one has to define a fitness function that guides individuals encoding symbolic music towards a given perceived emotion. It is very challenging to design a function that formally evaluates subjective aspects of music emotion. Thus, most EAs for AAC use interactive evaluation functions, where human subjects judge whether or not the generated pieces match a target emotion. The benefit of this approach is that when the population converges towards a target emotion, no further evaluation is needed to check if the generated pieces indeed match that emotion.
+However, every time one wants to generate a new set of pieces, the slow interactive evolutionary process
+has to be restarted.
+
+Kim and Andr{\'e} \cite{kim2004composing} proposed a genetic algorithm to generate polyrhythms\footnote{A polyrhythm is the concurrent playing of two or more different rhythms.} for four percussion instruments. It starts with a random population of polyrhythms and evolves them towards a given target emotion (e.g. relaxing or disquieting). A polyrhythm is encoded with four 16-bit strings, one for each instrument. A single bit in the string represents a beat division where 1 means that a (non-pitched) note is played in that division and 0 means silence. The fitness of a polyrhythm is given by a human subject who listens to it and judges it as relaxing, neutral, or disquieting. The selection strategy keeps the four most relaxing and four most disquieting individuals for reproduction with one-point crossover and mutation. Results showed that the genetic algorithm generated relaxing polyrhythms after 20 generations while it took only
+10 for it to generate disquieting ones.
+
+Zhu et al. \cite{zhu2008emotional} presented an interactive genetic algorithm based on the KTH rule system, which models performance principles within the realm of Western classical, jazz and popular music \cite{}. These rules control different music performance parameters (e.g. phrasing, articulation, tontal tension) with weights called \textit{k values} that control the magnitude of each rule. Zhu et al. \cite{zhu2008emotional} encoded the individuals as a set of k values used to create MIDI performances of the given pieces according to the KTH rules. The genetic algorithm evolves a population to find optimal k values that yield performances that are either happy or sad. The fitness of the performances are given by human subjects with a seven-point Likert scale.
+
+Nomura and Fukumoto \cite{nomura2018music} designed a distributed interactive genetic algorithm to generate four-bar piano melodies with controllable ``brightness''. Multiple human evaluators evolve independent populations of melodies in parallel. In some generations, the genetic algorithm exchanges individuals between the independent populations. With the exchange, evaluators are affected by each other and the solutions are expected to agree with everyone's evaluations. Each individual in a population represents a melody with sequence of sixteen pitch numbers (as defined by the MIDI protocol). Each element in the sequence is mapped into a quarter note with the pitch defined by the element. Evaluators give the fitness of an individual based on a seven-point Likert scale, where 1 means ``extremely dark'', 4 means ``neither'', and 7 means ``extremely bright''. An experiment with ten parallel evaluators showed that after seventeen generations, the independent populations converged to similar melodies.
+
+\subsection{Markov Chains}
+
+Markov chains for AAC can be manually designed or inferred from a corpus of symbolic music labelled
+according to a model of emotion. For example, Ramanto and Maulidevi \cite{ramanto2017markov} manually designed a markov chain to generate piano pieces. 
+
+Chung and Vercoe \cite{chung2006affective}
+
+\cite{monteith2010automatic} trained Hidden Markov models to generate music
+from a corpus labeled according to a categorical model of emotion. These models are trained for
+each emotion to generate melodies and underlying harmonies.
+
+
+
+
+
+\subsection{Deep Learning}
+
+\section{Conditional Generative Models}
+
+This paper is also related to previous works that condition generative models to control structural music features. For example, EC2-VAE \cite{yang2019deep} is a variational autoencoder that learns disentangled representations of symbolic music, allowing the generation of music with controlled pitch contour, rhythm patterns and chord progressions. Music Sketchnet \cite{chen2020music} is a neural network framework that allows users to specify partial musical ideas guiding automatic music generation.  Music FaderNets \cite{tan2020music} is another framework that generates new variations of music by controlling low-level attributes trained with latent regularization and feature disentanglement techniques.
+DeepJ \cite{} is another example of LSTM-based music generator that controls features.
+
+Our work differs from these generative models because, instead of controlling structural music features, we control emotion which is a perceived feature that emerges from the music structure.
+
+\section{Controlling Language Models}
+
+Our work is also related
+to neural models that generate text with a given characteristic.
+% using neural networks,
+% which we think can be generalized to music and thus are even more
+% relevant to this paper.
+For example, CTRL \cite{keskar2019ctrl} is a
+Transformer LM trained to generate text conditioned on
+special tokens that inform the LM about the characteristics of the text to be generated (e.g., style).
+% These control codes are derived automatically from the origin of
+% the text (e.g., Wikipedia). %, which means no manual annotation had to be performed.
+% During training, every example is fed as input together with
+% its control codes.
+%CTRL can be used to generate text with a
+%particular style, for example. % by feeding the information that represents that style.
+Our work differs
+from CTRL because we control the LM with
+a search procedure and not with an extra input to the LM. Conditioning the LM requires a large amount of labeled data, which is expensive
+in our domain. % the music and emotion domain.
+
+% \citeauthor{ziegler2019fine}~\shortcite{ziegler2019fine}
+% used reinforcement
+% learning (RL) to fine-tune a Transformer LM for generating text with a given sentiment by using a reward model trained
+% on human preferences on text continuations. %\citeauthor{ziegler2019fine} fine-tuned the model
+% %for two different purposes: generating text with sentiment and text
+% %summarization.
+% Our work differs from \citeauthor{ziegler2019fine}'s because we control the LM at sampling time (with search) and not at training time (with RL).
+% %They achieve good results with only 5,000 comparisons evaluated by humans.
+
+The Plug and Play LM
+\cite{dathathri2019plug} combines a pre-trained LM
+with a small attribute classifier to guide text generation.
+%without any  further training of the LM.
+%This is achieved by shifting
+%the hidden layers of the pre-trained LM at each time-step of
+%the generation process.
+Although both Composer and the Plug and Play LM control the generation procedure at sampling time, we use search as a means of generation control while Plug and Play LM uses a classifier to alter the structure of the model. %updates the hidden neurons.
+% This shift updates the hidden layers
+% towards the direction of the sum of two gradients: one towards higher
+% log-likelihood of the attribute and one towards higher log-likelihood of the LM.
+
+%Our work is also related to Stochastic Beam Search for sequence generation. For example,
+
+\cite{vijayakumar2018diverse} and \cite{Kool2019SBS} proposed variations of Beam search
+%(DBS) to solve the problem that generated sentences are often minor re-wordings of a common utterance.
+%DBS decodes diverse lists by dividing candidate solutions into groups and enforcing diversity between groups.
+%\citeauthor{Kool2019SBS}~\shortcite{Kool2019SBS} proposed a Beam search algorithm
+to solve the problem of generating repetitive sentences.
+%by applying
+%the ``Gumbel-Top-k'' trick to sample without replacement with Beam Search, mitigating the problem of generating repetitive sequences.
+Our work differs from both these works because our variation of Beam search optimizes for two independent objectives.

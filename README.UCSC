@@ -1,0 +1,115 @@
+This is the README file for the UCSCTHESIS class for LaTeX. It corresponds to
+version 3.2-ucsc-4 or greater of the UCSCTHESIS class (29 March 2017).
+
+The original UCTHESIS-UCSC class corresponds to version 3.2 of the UCTHESIS
+class (19 December 2004). This README.UCSC is public domain.
+
+The version of these files are intended to be used with the University of
+California, Santa Cruz Division of Graduate Studies "Dissertation and Thesis
+Preparation Guidelines" revised 2016.
+
+Although the UCTHESIS class is intended to be used at all University of
+California campuses, the guidelines vary from campus to campus. A cursory survey
+of the guidelines at Berkeley, Los Angeles, San Diego, and Santa Cruz campuses
+show mildly differing guidelines. The main differences come from the location of
+the page numbers which vary centered and outside in the header and footer area,
+slight variations in margin sizes, and the layout in the front matter. The
+UCTHESIS-UCSC class was created in order to provide a class file that was
+suitable for the guidelines mentioned above. The UCSCTHESIS class was created to
+provite an up-to-date alternative to the UCTHESIS-USCS class.
+
+*** How to use this package
+
+1. Fork and clone this Git repository.
+2. cd into the ucscthesis directory
+3. type "make" (or gmake) to generate a sample PDF file
+4a. modify uctest.tex in this directory
+    OR
+4b. copy uct1*.clo and ucscthesis.cls to the directory with your .tex files
+
+*** Tweaking
+
+
+- Font Size
+
+The document format is customized for three different typeface
+pointsizes: 10 point, 11 point, and 12 point. The size can be
+specified as an option like this:
+
+    \documentclass[11pt]{ucscthesis}
+
+The "uct11.clo" file is used in this case.
+
+Chapter headings font sizes must be modified in the uct1*.clo files.
+
+
+- Line spacing
+
+"Double spacing" is specified in the UCSC Dissertation and Thesis
+Preparation Guidelines. With some typefaces, for instance Times, the
+interline spacing (\baselinestretch = \baselineskip x scaling) may be
+too large due to font metrics indicating a very large leading. In this
+case, redefine \dsp to be a factor between 1.37 and 2.0 like this:
+
+    \def\dsp{\def\baselinestretch{1.8}\large\normalsize}
+    \dsp
+    \usepackage{times}
+    ...
+
+With 11 point Times, a reasonable number of double-spaced
+lines on a page is 23 or 24. The "1.8" factor will yield this.
+
+
+- Page format
+
+Differences in uct11.clo:
+
+                ucthesis-ucsc           ucscthesis
+                ------------------      ------------------
+\voffset        1.000 in (default)      1.000 in
+\topmargin      0.250 in                0     in    
+\headheight     0     in (default)      12    pt
+\headsep        0     in (default)      25    pt
+\textheight     8.125 in                32\baselineskip + \topskip
+\footskip       0.375 in                30    pt
+\textwidth      5.750 in                6.000 in
+
+These can be tweaked slightly. For instance, increasing \footskip to
+0.5in and reducing \textheight to 8.0in will set off the page number
+from the last line of text on a page a little bit more.
+
+
+- Printing
+
+When using PostScript or PDF output devices, do not crop oversized
+pages. The margins should measure exactly as described above. If the
+page is shifted, then \voffset can be tweaked slightly. If the text is
+too large, then the printer driver should be adjusted to scale
+slightly. I have not found that any adjustments were necessary.
+
+
+- Packages
+
+I have tested the following packages with this .cls file. Sometimes
+the order of usepackage matters. The following order worked for me.
+
+    ifthen
+    pdftex  (option to ucscthesis)
+    dvips   (option to ucscthesis)
+    times
+    mathptmx
+    graphicx
+    url
+    color
+    hyperref
+    algorithm
+    algorithmic
+
+
+*** Tracking Changes
+
+All changes are tracked in Git.
+
+Legally required history information for the reuse of LPPL-licensed code is in
+the LICENSE file.
+

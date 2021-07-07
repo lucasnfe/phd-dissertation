@@ -1,0 +1,160 @@
+%% uctest.tex
+%% See accompanying LICENSE file for licensing, history, and copyright
+%% information.
+
+% This line is required for LPPL compliance.
+\message{You are using a modified uctest.tex}
+% Note that if you turn this file into a Derived Work that is not intended as a
+% replacement for the original template (i.e. an actual thesis), and you do not
+% imply that anyone provides support for your modified version, you may
+% distribute it under any license you wish.
+
+\documentclass[11pt]{ucscthesis}
+\def\dsp{\def\baselinestretch{2.0}\large\normalsize}
+\dsp
+
+% 2010june01 sol katzman:
+% package geometry should override the various margin settings from .clo and .cls
+% and also eliminates issues where the default papersize is A4
+\usepackage[letterpaper, left=1.5in, right=1.25in, top=1.25in, bottom=1.25in, includefoot]{geometry}
+% Use PostScript fonts as required by UCSC Dissertation Preparation Guidelines
+\usepackage{pslatex}
+\usepackage{graphicx}
+\usepackage{spverbatim}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{url}
+\usepackage{amsfonts}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{verse}
+\usepackage{tikz}
+\usetikzlibrary{positioning,chains}
+
+\usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\renewcommand{\poemtitlefont}{\normalfont\large\itshape\centering}
+
+
+\begin{document}
+
+% Declarations for Front Matter
+
+\title{Controlling Deep Generative Models for \\ Affective Music Composition}
+\author{Lucas N. Ferreira}
+\degreeyear{2021}
+\degreemonth{July}
+\degree{DOCTOR OF PHILOSOPHY}
+\chair{Professor Jim Whitehead}
+\committeememberone{Professor Marilyn Walker}
+\committeemembertwo{Professor Levi Lelis}
+% \committeememberthree{Professor Ipsum Lorem}
+\numberofmembers{3} %% (includzing chair) possible: 3, 4, 5, 6
+\deanlineone{Peter F. Biehl}
+\deanlinetwo{Vice Provost and Dean of Graduate Studies}
+\deanlinethree{}
+\field{Computer Science}
+\campus{Santa Cruz}
+
+\begin{frontmatter}
+
+\maketitle
+\copyrightpage
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\begin{abstract}
+Theses have elements.  Isn't that nice?
+
+\end{abstract}
+
+\begin{dedication}
+\null\vfil
+{\large
+\begin{center}
+To myself,\\\vspace{12pt}
+Lucas N. Ferreira,\\\vspace{12pt}
+the only person worthy of my company.
+\end{center}}
+\vfil\null
+\end{dedication}
+
+\begin{acknowledgements}
+I want to thank ...
+\end{acknowledgements}
+
+\end{frontmatter}
+
+% \part{The Problem}
+
+\chapter{Introduction}
+\label{ch:intro}
+\input{tex/introduction}
+
+\chapter{A Brief History of Algorithmic Music Composition}
+\label{ch:amc}
+\input{tex/amc}
+
+\chapter{Deep Learning for Algorithmic Music Composition}
+\label{ch:ml}
+\input{tex/ml}
+
+\chapter{Related Work}
+\label{ch:related}
+\input{tex/related_work}
+
+% \chapter{The VGMIDI Dataset}
+% \label{ch:vgmidi}
+% \input{tex/vgmidi}
+
+\chapter{Learning to Generate Music with Sentiment}
+\label{ch:ismir19}
+\input{tex/ismir19}
+
+\chapter{Computer-Generated Music for Tabletop Role-Playing Games}
+\label{ch:aiide20}
+\input{tex/aiide20}
+
+\chapter{Monte Carlo Tree Search}
+\label{ch:ismir21}
+\input{tex/ismir21}
+
+% \chapter{Generating Music for Tabletop Role-Playing Games}
+% \label{ch:rpg}
+% \input{tex/rpg}
+
+\chapter{Future Work}
+\label{ch:future}
+\input{tex/future}
+
+\chapter{Conclusion}
+\label{ch:conclusion}
+\input{tex/conclusion}
+
+\appendix
+\chapter{Appendix}
+
+Ancillary material should be put in appendices, which appear BEFORE the
+bibliography.
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% bibliography
+
+% 2010june01 sol katzman:
+% if \nocite is specified, all entries in the bib file are included,
+% probably not what you want, so comment out the \nocite and only get the cited references.
+%\nocite{*}
+
+% 2010june01 sol katzman:
+% this makes the bibliography single spaced, with double spacing between entries
+\def\baselinestretch{1.0}\large\normalsize
+
+\bibliographystyle{plain}
+\bibliography{uctest}
+
+\end{document}
