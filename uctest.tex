@@ -29,6 +29,8 @@
 \usepackage{multirow}
 \usepackage{verse}
 \usepackage{tikz}
+\usepackage[numbers]{natbib}
+
 \usetikzlibrary{positioning,chains}
 
 \usepackage{mathtools}
@@ -69,23 +71,15 @@
 \listoftables
 
 \begin{abstract}
-Theses have elements.  Isn't that nice?
-
+\input{tex/abstract}
 \end{abstract}
 
 \begin{dedication}
-\null\vfil
-{\large
-\begin{center}
-To myself,\\\vspace{12pt}
-Lucas N. Ferreira,\\\vspace{12pt}
-the only person worthy of my company.
-\end{center}}
-\vfil\null
+\input{tex/dedication}
 \end{dedication}
 
 \begin{acknowledgements}
-I want to thank ...
+\input{tex/acknowledgements}
 \end{acknowledgements}
 
 \end{frontmatter}
@@ -116,7 +110,7 @@ I want to thank ...
 \label{ch:aiide20}
 \input{tex/aiide20}
 
-\chapter{Controlling Perceived Emotion in Symbolic Music Generation with \\ Monte Carlo Tree Search}
+\chapter{Controlling Perceived Emotion in Symbolic Music Generation with Monte Carlo Tree Search}
 \label{ch:ismir21}
 \input{tex/ismir21}
 
@@ -134,9 +128,8 @@ I want to thank ...
 
 \appendix
 \chapter{Appendix}
-
-Ancillary material should be put in appendices, which appear BEFORE the
-bibliography.
+\label{ch:conclusion}
+\input{tex/appendix}
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % bibliography
@@ -150,7 +143,8 @@ bibliography.
 % this makes the bibliography single spaced, with double spacing between entries
 \def\baselinestretch{1.0}\large\normalsize
 
-\bibliographystyle{plain}
+% \bibliographystyle{plain}
+\bibliographystyle{plainnat}
 \bibliography{uctest}
 
 \end{document}

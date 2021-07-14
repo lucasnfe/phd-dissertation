@@ -191,46 +191,28 @@ Most of these early computational examples of AMC were developed by artists in a
 % Symbolic, Knowledge-Based System
 % TODO: rephrase final part
 
-\vspace{0.1in}
-\noindent
-\textbf{Expert Systems}
+\subsection{Expert Systems}
 
-\noindent
 AMC expert systems use rules that manipulate symbolic music to mimic the reasoning of music composers. For example, Gill \cite{gill1963technique} presented the first application of hierarchical search with backtracking to guide a set of compositional rules from Schoenberg’s twelve-tone technique. Many different works formulated AMC as a \textit{constraint satisfaction problem} (CSP) \cite{anders2011constraint}. For example, Ebcio{\u{g}}lu \cite{ebciouglu1988expert} designed a system called CHORAL for harmonizing four-part chorales in the style of J.S. Bach. The system contains over 270 rules (related to melody, harmony, etc.), expressed in the form of first-order predicate calculus. CHORAL harmonizes the chorales using an informed search method where the heuristics guide the search towards Bachian cadences\footnote{A cadence is a chord progression that occurs at the end of a phrase. A phrase is a series of notes that sound complete even when played apart from the main song.}. Expert systems can also be formalized with \textit{case-based reasoning}. Pereira et al. \cite{pereira1997composing} proposed a system with a case database from just three Baroque music pieces, which were analyzed into hierarchical structures. The system composes just the soprano melodic line of the piece by searching for similar cases in its case database.
 
-% Grammars
-% TODO: rephrase final part
-\vspace{0.1in}
-\noindent
-\textbf{Generative Grammars}
+\subsection{Generative Grammars}
 
-\noindent
 \textit{Generative grammars} are a set of expansion rules that give instructions for how to expand symbols from a vocabulary. Starting with an initial sequence of symbols, one can compose music with generative grammars by recursively applying expansion rules until a terminal symbol has been reached or a desired length of music has been generated \cite{holtzman1981using}. The expansion rules can be manually defined or inferred from analyzing a corpus of pre-existing music compositions. Lidov and Gadura \cite{lidov1973melody} presented an early example of generative grammar manually designed for the generation of melodies with different rhythmic patterns. A more recent example is the work of Keller and Morrison \cite{keller2007grammatical}, who designed a probabilistic generative grammar for the automatic generation of convincing jazz melodies. In this case, the expansion rules have probabilities associated with them. One of the most famous examples of generative grammars in AMC is Cope's \textit{Experiments in Musical Intelligence} (EMI) \cite{cope1989experiments}, which automatically derives a special type of grammar called \textit{Augmented Transition Network} from a corpus of compositions in a specific style. EMI extracts this augmented transition network by finding short musical patterns that are characteristic of the style being analyzed. EMI also determines how and when to use these patterns in compositions with that style. The inferred transition network can be used to generate new music pieces with the style of the analyzed corpus.
 
 % Self-similarity and Cellular Automata
-\vspace{0.1in}
-\noindent
-\textbf{Cellular Automata}
+\subsection{Cellular Automata}
 
-\noindent
 \textit{Cellular Automata} (CA) is a dynamic system composed of simple units (called \textit{cells}) usually arranged in an n-dimensional grid. A cell can be in one state at a time. At each time step, the CA updates each cell according to \textit{transition rules}, which consider the state of the cell and/or the state of the neighbor cells \cite{wolfram2002new}. In his 1986 work \textit{Horos}, Xenakis designed a CA to produce harmonic progressions and new instrument combinations \cite{solomos2005cellular}. CAMUS \cite{miranda1993cellular} is a system that combined two bi-dimensional CAs to compose polyphonic music: Conway's \textit{Game of Life} \cite{gardner1970} and Griffeath’s \textit{Crystalline Growths} \cite{dewdney1989}. Each activated cell in the Game of Life was mapped to a \textit{triad}\textit{A tuple of three notes.}, whose instrument was selected according to the corresponding cell in the Crystalline Growths CA. WolframTones \cite{ball2005making} is a commercial system that composes music with one-dimensional CAs that resemble a selected musical style. The system allows users to select a pre-defined music style (e.g. classical, ambient, jazz) and set different parameters of the algorithm (e.g. rule number, rule type, seed). Moreover, users can define how to map the CA patterns to different musical features (e.g. pitch, tempo, timber).
 
-% Evolutionary
-\vspace{0.1in}
-\noindent
-\textbf{Evolutionary Algorithms}
+\subsection{Evolutionary Algorithms}
 
-\noindent
 \textit{Evolutionary Algorithms} (EAs) are optimization algorithms that keep a population of candidate solutions (called \textit{individuals}) to maximize (or minimize) a given objective function (called \textit{fitness function}) with a iterative process: (a) evaluation of the current population with the given fitness function, (b) selection of the best solutions and (c) generation of new solutions from the current. Horner and Goldberg \cite{horner1991genetic} presented one of the first examples of EA for music composition. Their algorithm was inspired by a composition technique called \textit{thematic bridging}, where the beginning and end of a piece are given, and a fixed number of transformations (e.g. transposition, inversion, retrograde, etc) are applied to map the beginning into the ending. Each candidate solution was encoded as a fixed set of transformations. The fitness function measured the distance between the ending generated by the candidate and the given ending. New solutions are generated with regular mutation and 1-point crossover. Other examples of EAs are the works of McIntyre \cite{mcintyre1994bach} for four-part baroque harmonization, Polito et al. \cite{polito1997musica} for counterpoint composition, and Papadopoulos and Wiggins \cite{papadopoulos1998genetic} for the generation of melodies for given jazz chord progressions.
 
 Formulating good fitness functions is one of the major challenges of applying evolutionary algorithms for AMC. To deal with this problem, a wide range of works use human evaluators to listen and judge the fitness of the candidate solutions. These approaches are called musical Interactive Genetic Algorithms (IGAs). For example, GenJam \cite{biles1994genjam} is a IGA for generating jazz solos with two hierarchically structured populations: one for bar units and the other for jazz phrases (constructed as sequences of measures). A human evaluator defines the fitness of the candidate solutions with a binary score (good or bad). GenJam accumulates these scores to select phrases during the evolutionary process and generate the solos for a given chord progression. Other examples are presented in the works of Jacob \cite{jacob1995composing}, Schmidl \cite{schmidl2008pseudo}, Tokui and Iba \cite{tokui2000music},
 and many others.
 
-\vspace{0.1in}
-\noindent
-\textbf{Markov Chains}
+\subsection{Markov Chains}
 
-\noindent
 \textit{Markov chains} were a very popular method in the early days of AMC \cite{ames1989markov}.
 A Markov chain is a system with a sequence of states, using conditional probabilities to model the transitions between successive states \cite{gillick2010machine}. In a first-order Markov chain, the probability of the next state depends only on the current state, but in an nth-order Markov chain, the probability is conditioned on the previous n-1 states \cite{gillick2010machine}. Markov Chains can be represented as a directed graph where nodes represent states, edges represent transitions between states, and edge weights represent the probability transition between states. This graph can be mapped to a probability table $T$ where rows $i$ and columns $j$ represent nodes, and elements $T_{i,j}$ represent the probability of transitioning between nodes $i$ and $j$. Figure \ref{fig:markov_chain} shows an example of a simple abstract Markov Chain.
 
@@ -278,7 +260,5 @@ very expensive to train \cite{moorer1972music}.
 
 Markov chains can also be used to evaluate music generated by other methods. Given a sequence of states representing a piece of music, one can evaluate this piece with the joint probability of the sequence as given by the Markov chain. Thus, the higher the probability, the better the music. This approach was used by Lo and Lucas \cite{lo2006evolving}. They trained a Markov chain with classical music pieces and used it to calculate the fitness of candidate solutions of an EA. Each solution in the EA represents a melody encoded as a sequence of pitch numbers as defined by the MIDI format.
 
-% TODO: Conclude this chapter linking markov chains with deep learning
 Most of methods presented in this section require musical models (or rules) to be defined and encoded
-to manipulate or evaluate music. Although music theory formalizes several aspects of music analysis and composition, defining and encoding computational music models for AMC is still very challenging, given that music composition is a creative task. Some of the presented methods, such as generative grammars and Markov models, can infer these rules from a corpus of music. However, in practice, they have shown to have limited performance in terms of music quality. Deep learning is a modern approach to AI, where neural networks are trained to perform various tasks. Recently, the AI research community has drawn strong attention to this approach due to the impressive results that it has been achieving in different problems
-(e.g. image classification, speech recognition, and machine translation) \cite{lecun2015deep}. These results also motivated AMC researchers to explore deep learning algorithms for music composition \cite{briot2017deep}. The next chapter presents a detailed discussion on how deep learning can be used to learn music rules from a corpus of pieces.
+to manipulate or evaluate music. Although music theory formalizes several aspects of music analysis and composition, defining and encoding computational music models for AMC is still very challenging, given that music composition is a creative task. Some of the presented methods, such as generative grammars and Markov models, can infer these rules from a corpus of music. However, in practice, they have shown to have limited performance in terms of music quality. Deep learning is a modern approach to AI, where neural networks are trained to perform various tasks. Recently, the AI research community has drawn strong attention to this approach due to the impressive results that it has been achieving in different problems (e.g. image classification, speech recognition, and machine translation) \cite{lecun2015deep}. These results also motivated AMC researchers to explore deep learning algorithms for music composition \cite{briot2017deep}. The next chapter presents a detailed discussion on how deep learning can be used to learn music rules from a corpus of pieces.
