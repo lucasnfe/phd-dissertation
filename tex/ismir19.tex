@@ -1,6 +1,6 @@
 \section{Introduction}
 
-The work introduced in this chapter is the first main contribution of this dissertation. It is inspired by Radford et al. \cite{radford_2017}, which fine-tuned an LSTM LM with an extra linear layer to classify sentiment in text. This fine-tuning procedure highlighted that most of the sentiment signal was stored in a single neuron. Thus, this neuron could be directly adjusted to control the original LSTM LM to generate text with a target sentiment. This chapter shows an application of Radford et al. \cite{radford_2017}'s method to control sentiment in symbolic music generated via LMs. First, the VGMIDI dataset is introduced, a new dataset of symbolic piano pieces labeled according to a circumplex model of emotion. Second, an LSTM is trained as a LM with unlabeled piano pieces. Third, this LSTM-based LM is fine-tuned with an extra linear layer on the valence (i.e. sentiment) dimension of the VGMIDI dataset. Different than the findings of Radford et al. \cite{radford_2017}, the fine-tuning step didn't store the sentimental in a single neuron but in many neurons in a more balanced way. Thus, a genetic algorithm is applied to optimize the weights of these sentiment neurons towards a given sentiment. The accuracy of the model in classifying sentiment of symbolic music is evaluated with the VGMIDI dataset, and results show that the model is able to obtain good prediction accuracy. Moreover, a user study shows that human subjects agreed that the generated music has the intended sentiment; however, negative pieces can be ambiguous. This work has been published at the 20th annual conference of the International Society for Music Information Retrieval (ISMIR).
+This chaper introduces a method inspired by \citet{radford_2017} to generate symbolic music with sentiment. \citet{radford_2017} fine-tuned an LSTM LM with an extra linear layer to classify sentiment in text. This fine-tuning procedure highlighted that most of the sentiment signal was stored in a single neuron. Thus, this neuron could be directly adjusted to control the original LSTM LM to generate text with a target sentiment. This chapter shows an application of Radford et al. \cite{radford_2017}'s method to control sentiment in symbolic music generated via LMs. First, the VGMIDI dataset is introduced, a new dataset of symbolic piano pieces labeled according to a circumplex model of emotion. Second, an LSTM is trained as a LM with unlabeled piano pieces. Third, this LSTM-based LM is fine-tuned with an extra linear layer on the valence (i.e. sentiment) dimension of the VGMIDI dataset. Different than the findings of Radford et al. \cite{radford_2017}, the fine-tuning step didn't store the sentimental in a single neuron but in many neurons in a more balanced way. Thus, a genetic algorithm is applied to optimize the weights of these sentiment neurons towards a given sentiment. The accuracy of the model in classifying sentiment of symbolic music is evaluated with the VGMIDI dataset, and results show that the model is able to obtain good prediction accuracy. Moreover, a user study shows that human subjects agreed that the generated music has the intended sentiment; however, negative pieces can be ambiguous. This work has been published at the 20th annual conference of the International Society for Music Information Retrieval (ISMIR).
 
 \section{The VGMIDI dataset}
 
@@ -16,7 +16,7 @@ The tool designed to annotate the video game soundtracks in MIDI format is compo
 
 The main page has two phases: calibration and annotation. In the calibration phase, annotators listen to the first 15 seconds of the piece to get used to it and define the starting point of the annotation circle. In the annotation phase, they listen to the piece from beginning to end and label it using the annotation circle, which starts at the point defined during the calibration phase. Figure \ref{fig:annotation_main} shows the annotation interface for valence and arousal, where annotators click and hold the circle (with the play icon) inside the circumplex model (outer circle), indicating the current emotion of the piece. In order to maximize annotators' engagement in the task, the piece is only played while they maintain a click on the play circle. In addition, basic instructions on how to use the tool are shown to the participants along with the definitions of valence and arousal. A progression bar is also shown to the annotators to know how far they are from completing each phase. This last step (calibration and annotation) is repeated for a second piece. All of the pieces the annotators listened to are MIDI files synthesized with the ``Yamaha C5 Grand" soundfont. Finally, participants provide demographic information, including gender, age, location (country), musicianship experience, and whether they previously knew the pieces they annotated.
 
-\begin{figure}
+\begin{figure}[!h]
  \centering
  \includegraphics[width=\columnwidth]{imgs/ismir19/annotation_tool.png}
  \caption{Screenshot of the annotation tool.}
@@ -32,7 +32,7 @@ The data collection process provides a time series of valence-arousal values for
 
 The cluster with the highest variance is considered noise, and so it is discarded. The cluster with more time series among the two remaining ones is then selected and summarized by the mean of its time series. The mean is split at all the points where the valence changes from positive to negative or vice-versa. This process creates several segments with the same sentiment, where segments with negative valence are considered negative phrases and segments with positive valence are positive phrases. Figure \ref{fig:clustering} shows an example of this three-step process performed on a piece. All the phrases that had no notes (i.e. silence phrases) were removed. This process created a total of 966 phrases: 599 positive and 367 negative.
 
-\begin{figure}
+\begin{figure}[!h]
  \centering
  \includegraphics[width=\columnwidth]{imgs/ismir19/clustering.png}
  \caption{Data analysis process used to define the final label of the phrases of a piece. }
@@ -115,7 +115,7 @@ Radford et al. \cite{radford_2017} used a single-layer multiplicative LSTM (mLST
 
 For example, Figure \ref{fig:enc_ex} shows the encoding of the first two time steps of the first measure of the Legend of Zelda - Ocarina of Time's Prelude of Light. The first time step sets the tempo to 120bpm, the velocity of the following notes to 76, and plays the D Major Triad for the duration of a whole note. The second time step sets the velocity to 84 and plays a dotted quarter A5 note. The total size of this vocabulary is 225, and it represents both the composition and performance elements of a piece (timing and dynamics).
 
-\begin{figure}
+\begin{figure}[!h]
  \centering
  \includegraphics[width=.95\columnwidth]{imgs/ismir19/encoding.pdf}
 \begin{spverbatim}

@@ -77,6 +77,7 @@ Music FaderNets \cite{tan2020music} is a framework based on a Gaussian Mixture V
 % Our work differs from these generative models because, instead of controlling structural music features, we control emotion which is a perceived feature that emerges from the music structure.
 
 \section{Controllable Neural Language Models}
+\label{sec:related_nlp}
 
 Considering the similarities between music and text neural LMs, this dissertation is also related to methods that control neural LMs to generate text with given characteristics (e.g. topic, style, sentiment). For example, Radford et al. \cite{radford_2017} showed that an LSTM can learn an excellent representation of sentiment (positive-negative) on text, despite being trained only to predict the next character in the Amazon reviews dataset \cite{He2016}. When fine-tuned with an extra linear layer, this LSTM achieved state-of-the-art sentiment analysis on the stanford sentiment treebank dataset \cite{socher2013recursive} and matched the performance of previous supervised systems using 30-100x fewer labeled examples. Radford et al. \cite{radford_2017} observed that this LSTM stored almost all of the sentiment signal in a distinct \textit{sentiment neuron}, which could be used to control the LSTM to generate sentences with a given sentiment.
 
