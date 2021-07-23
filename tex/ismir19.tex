@@ -1,20 +1,23 @@
 \section{Introduction}
 
-As discussed in the previous chapter, \citet{radford_2017} showed that fine-tuning a pre-trained neural LSTM LM with an extra classification head to perform sentiment analysis exposes the neurons in the LM that carry sentiment signal. For particular datasets, most of the sentiment signal in the classification head comes from a single neuron in the LSTM. Thus, this neuron can be manually adjusted to control the LSTM LM to generate text with a target sentiment. This chapter introduces a method inspired by \citet{radford_2017} to generate symbolic music with a target sentiment (positive or negative). First, the VGMIDI dataset is introduced, a new dataset of symbolic piano pieces labeled according to the circumplex model of emotion. Second, an LSTM is trained as a LM with the unlabeled pieces of the VGMIDI dataset. Finally, this LSTM LM is fine-tuned with an extra linear layer and L1 regularization on the labeled pieces of the VGMIDI dataset. Different than the findings of \citet{radford_2017}, this fine-tuning step did not expose a single sentiment neuron but many neurons that contribute to sentiment in a more balanced way. Thus, a genetic algorithm is applied to optimize the weights of these sentiment neurons, controlling the LSTM LM to generate either positive or negative music. This approach is evaluated with two experiments. First, a cross-validation on the VGMIDI dataset shows that the model obtains good prediction accuracy. Second, a listening test shows that human subjects agree that the generated music has the intended sentiment; however, negative pieces can be ambiguous. This work has been published at the 20th annual conference of the International Society for Music Information Retrieval (ISMIR).
+As discussed in the previous chapter, \citet{radford_2017} showed that fine-tuning a pre-trained neural LSTM LM with an extra classification head to perform sentiment analysis exposes the neurons in the LM that carry sentiment signal. For particular datasets, most of the sentiment signal in the classification head comes from a single neuron in the LSTM. Thus, this neuron can be manually adjusted to control the LSTM LM to generate text with a target sentiment. This chapter introduces a method inspired by \citet{radford_2017} to generate symbolic music with a target sentiment (positive or negative). First, the VGMIDI\footnote{\url{https://github.com/lucasnfe/vgmidi}} dataset is introduced, a new dataset of symbolic piano pieces labeled according to the circumplex model of emotion. Second, an LSTM is trained as a LM with the unlabeled pieces of the VGMIDI dataset. Finally, this LSTM LM is fine-tuned with an extra linear layer and L1 regularization on the labeled pieces of the VGMIDI dataset. Different than the findings of \citet{radford_2017}, this fine-tuning step did not expose a single sentiment neuron but many neurons that contribute to sentiment in a more balanced way. Thus, a genetic algorithm is applied to optimize the weights of these sentiment neurons, controlling the LSTM LM to generate either positive or negative music. This approach is evaluated with two experiments. First, a cross-validation on the VGMIDI dataset shows that the model obtains good prediction accuracy. Second, a listening test shows that human subjects agree that the generated music has the intended sentiment; however, negative pieces can be ambiguous. This work was published in the Proceedings of the 20th Conference of the International Society for Music Information Retrieval (ISMIR19) \cite{ferreira_2019}.
 
 \section{The VGMIDI dataset}
 
 % In order to apply the Radford et al. \cite{radford_2017} method to compose music with sentiment, we also need a dataset of MIDI files to train the LSTM and another one to train the logistic regression.
-Currently, there are only a few datasets of symbolic music labelled according to emotion \cite{madhok2018sentimozart, tan2020automated, zhao2019emotional} and none are labelled according to sentiment. Thus, a new dataset called VGMIDI has been created with 823 pieces extracted from video game soundtracks in MIDI format. Video game soundtracks are well suited for this dataset because they are typically composed to intentionally keep the player in a specific affective state and thus tend to be less subjective. All the pieces are piano arrangements of the soundtracks and they vary in length from 26 seconds to 3 minutes. Among these pieces, 95 are annotated according to a circumplex model that represents emotion using a valence-arousal pair. VGMIDI uses a valence-arousal model because it allows continuous annotation of music and because of its flexibility---one can directly map a valence-arousal (v-a) pair to a multiclass (happy, sad, surprise, etc) or a binary (positive/negative) model. Thus, the same set of labelled data permits the investigation of affective algorithmic music composition as both a classification (multiclass and/or binary) and as a regression problem. The valence-arousal model is also one of the most common dimensional models used to label emotion in music \cite{Soleymani_2013}.
+A new dataset called VGMIDI has been created to apply the \textit{sentiment neuron} \cite{radford_2017} method on the symbolic music domain. Initially, the VGMIDI dataset had 823 piano arrangements of video game soundtracks in MIDI format\footnote{The VGMIDI dataset has been extended throughout this dissertation.}, varying in length from 26 seconds to 3 minutes.
+% Video game soundtracks are well suited for this dataset because they are typically composed to intentionally keep the player in a specific affective state and thus tend to be less subjective.
+Among these pieces, 95 are annotated according to the circumplex (valence-arousal) model of emotion. VGMIDI uses the circumplex model because it allows continuous annotation of music, and because of its flexibility--one can directly map a valence-arousal  (v-a) pair to a multiclass (e.g. happy, sad, tense, peaceful) or a binary (positive/negative) model. Thus, the same set of labeled data permits the investigation of AAC as both a classification (multiclass/binary) or a regression problem. The circumplex model is also one of the most common models used to label emotion in music \cite{Soleymani_2013}. A few similar datasets have been created concurrently with the VGMIDI \cite{madhok2018sentimozart, tan2020automated, zhao2019emotional}, but none are labeled according to sentiment.
+% Moreover, none of them cover video game music.
 
-Annotating a piece according to the circumplex model consists of continuously listening to the piece and deciding what valence-arousal pair best represents the emotion of that piece in each moment, producing a time series of v-a pairs. This task is subjective, and hence there is no single ``correct'' time series for a given piece. Thus, VGMIDI  was labeled by asking several human subjects to listen to the pieces and then considering the average time series as the ground truth. This process was conducted online via Amazon Mechanical Turk, where each piece was annotated by 30 subjects using a web-based tool designed specifically for this task. Each subject annotated 2 pieces out of 95, and got rewarded USD \$0.50 for performing this task.
+Annotating a piece according to the circumplex model consists of continuously listening to the piece and deciding what v-a pair best represents the emotion of that piece in each moment, producing a time series of v-a pairs. This task is subjective, and hence there is no single ``correct'' time series for a given piece. Thus, VGMIDI was labeled by asking several human subjects to listen to the pieces and then considering the average time series as the ground truth. This process was conducted online via Amazon Mechanical Turk, where each piece was annotated by 30 subjects using a web-based tool designed specifically for this task\footnote{\url{https://github.com/lucasnfe/adl-music-annotation}}. Each subject annotated 2 pieces out of 95, and got rewarded USD \$0.50 for performing this task.
 
 \subsection{Annotation Tool and Data Collection}
 \label{sec:data_collection}
 
-The tool designed to annotate the video game soundtracks in MIDI format is composed of five steps, each one being a single web page. These steps are based on the methodology proposed by Soleymani et al. \cite{Soleymani_2013} for annotating music pieces in audio waveform. First, participants are introduced to the annotation task with a short description explaining the goal of the task and how long it should take on average. Second, they are presented with the definitions of valence and arousal. On the same page, they are asked to play two short pieces and indicate whether arousal and valence are increasing or decreasing. Moreover, annotators are asked to write two to three sentences describing these short pieces. This page is intended to measure their understanding of the valence-arousal model and willingness to perform the task. Third, a video tutorial was made available to the annotators explaining how to use the annotation tool. Fourth, annotators are exposed to the main annotation page.
+The tool designed to annotate the VGMIDI dataset is composed of five steps, each one being a single web page. These steps are based on the methodology proposed by \citet{Soleymani_2013} for annotating music pieces in audio waveform. First, participants are introduced to the annotation task with a short description explaining the goal of the task and how long it should take on average. Second, they are presented with the definitions of valence and arousal. On the same page, they are asked to play two short pieces and indicate whether arousal and valence are increasing or decreasing. Moreover, annotators are asked to write two to three sentences describing these short pieces. This page is intended to measure their understanding of the circumplex model and willingness to perform the task. Third, a video tutorial was made available to the annotators explaining how to use the annotation tool. Fourth, annotators are exposed to the main annotation page.
 
-The main page has two phases: calibration and annotation. In the calibration phase, annotators listen to the first 15 seconds of the piece to get used to it and define the starting point of the annotation circle. In the annotation phase, they listen to the piece from beginning to end and label it using the annotation circle, which starts at the point defined during the calibration phase. Figure \ref{fig:annotation_main} shows the annotation interface for valence and arousal, where annotators click and hold the circle (with the play icon) inside the circumplex model (outer circle), indicating the current emotion of the piece. In order to maximize annotators' engagement in the task, the piece is only played while they maintain a click on the play circle. In addition, basic instructions on how to use the tool are shown to the participants along with the definitions of valence and arousal. A progression bar is also shown to the annotators to know how far they are from completing each phase. This last step (calibration and annotation) is repeated for a second piece. All of the pieces the annotators listened to are MIDI files synthesized with the ``Yamaha C5 Grand" soundfont. Finally, participants provide demographic information, including gender, age, location (country), musicianship experience, and whether they previously knew the pieces they annotated.
+The main page has two phases: calibration and annotation. In the calibration phase, annotators listen to the first 15 seconds of the piece to get used to it and define the starting point of the annotation circle. In the annotation phase, they listen to the piece from beginning to end and label it using the annotation circle, which starts at the point defined during the calibration phase. Figure \ref{fig:annotation_main} shows the annotation interface for valence and arousal, where annotators click and hold the circle (with the play icon) inside the circumplex model (outer circle), indicating the current emotion of the piece. In order to maximize annotators' engagement in the task, the piece is only played while they maintain a click on the play circle. In addition, basic instructions on how to use the tool are shown to the participants along with the definitions of valence and arousal. A progression bar is also shown to the annotators to know how far they are from completing each phase. This last step (calibration and annotation) is repeated for a second piece. All pieces the annotators listened to are MIDI files synthesized with the \textit{Yamaha C5 Grand Piano} soundfont\footnote{\url{http://freepats.zenvoid.org/Piano/acoustic-grand-piano.html}}. Finally, participants provide demographic information, including gender, age, location (country), musicianship experience, and whether they previously knew the pieces they annotated.
 
 \begin{figure}[!h]
  \centering
@@ -26,98 +29,42 @@ The main page has two phases: calibration and annotation. In the calibration pha
 \subsection{Data Analysis}
 \label{sec:data_analysys}
 
-The annotation task was performed by 1425 annotators, where 55\% are female and 42\% are male. The other 3\% classified themselves as transgender female, transgender male, genderqueer, or choose not to disclose their gender. All annotators are from the United States and have an average age of approximately 31 years. Musicianship experience was assessed using a 5-point Likert scale where 1 means ``I've never studied music theory or practice'' and 5 means ``I have an undergraduate degree in music''. The average musicianship experience is 2.28. They spent on average 12 minutes and 6 seconds to annotate the two pieces.
+The annotation task was performed by 1425 annotators, where 55\% are cis female and 42\% are cis male. The other 3\% considered themselves as transgender female, transgender male, genderqueer, or choose not to disclose their gender. All annotators are from the United States and have an average age of approximately 31 years. Musicianship experience was assessed using a 5-point Likert scale where 1 means ``I've never studied music theory or practice'' and 5 means ``I have an undergraduate degree in music''. The average musicianship experience is 2.28. The participants spent on average 12 minutes and 6 seconds to annotate the two pieces.
 
-The data collection process provides a time series of valence-arousal values for each piece. However, only the valence dimension is needed to create a music sentiment dataset. Thus, each piece has 30 time series of valence values. The annotation of each piece was preprocessed, summarized into one time series, and split into ``phrases'' of the same sentiment. The preprocessing is intended to remove noise caused by subjects performing the task randomly to get the reward as fast as possible. The data was preprocessed by smoothing each annotation with a moving average and clustering all 30 time series into 3 clusters (positive, negative, and noise) according to the dynamic time-warping distance metric.
+The data collection process provides a time series of v-a values for each piece. However, only the valence dimension is needed to create a music sentiment dataset. Thus, each piece has 30 time series of valence values. The annotation of each piece was preprocessed, summarized into one time series, and split into ``phrases'' of the same sentiment. The preprocessing is intended to remove noise caused by subjects performing the task randomly to get the reward as fast as possible. The data was preprocessed by smoothing each annotation with a moving average and clustering all 30 time series into 3 clusters (positive, negative, and noise) according to the dynamic time-warping distance metric.
 
-The cluster with the highest variance is considered noise, and so it is discarded. The cluster with more time series among the two remaining ones is then selected and summarized by the mean of its time series. The mean is split at all the points where the valence changes from positive to negative or vice-versa. This process creates several segments with the same sentiment, where segments with negative valence are considered negative phrases and segments with positive valence are positive phrases. Figure \ref{fig:clustering} shows an example of this three-step process performed on a piece. All the phrases that had no notes (i.e. silence phrases) were removed. This process created a total of 966 phrases: 599 positive and 367 negative.
+The cluster with the highest variance is considered noise, and so it is discarded. The cluster with more time series among the two remaining ones is then selected and summarized by the mean of its time series. The mean is split at all the points where the valence changes from positive to negative or vice-versa. This process creates several segments with valence values of the same sign, where segments with negative valence are considered negative phrases and segments with positive valence are positive phrases. Figure \ref{fig:clustering} shows an example of this three-step process performed on a piece. All the phrases that had no notes (i.e. silence phrases) were removed. This process created a total of 966 phrases: 599 positive and 367 negative.
 
 \begin{figure}[!h]
  \centering
- \includegraphics[width=\columnwidth]{imgs/ismir19/clustering.png}
+ \includegraphics[width=0.9\columnwidth]{imgs/ismir19/clustering.png}
  \caption{Data analysis process used to define the final label of the phrases of a piece. }
  \label{fig:clustering}
 \end{figure}
 
-% Table \ref{tab:dataset} shows a snippet of the dataset.
-%
-% \begin{table}[!h]
-%  \begin{center}
-%  \begin{tabular}{ccc}
-%   \hline
-%   \textbf{Label} & \textbf{Piece ID} & \textbf{MIDI Phrase} \\
-%   \hline
-%      0 & 14 & piece14\_phrase6.mid \\
-%      0 & 14 & piece14\_phrase7.mid \\
-%      1 & 15 & piece15\_phrase0.mid \\
-%   \hline
-%  \end{tabular}
-% \end{center}
-%  \caption{Snippet of the VGMIDI labeled phrases.}
-%  \label{tab:dataset}
-% \end{table}
 
 \section{Models and Data Representation}
 \label{sec:model}
 
-% Deep Learning has recently achieved incredible results in music composition,
-% but one still can't guide the proposed models to generate compositions
-% with a given goal. This paper is motivated by the application of soundtrack
-% generation and so it focus on the controlling emotions of the generated pieces.
-% We propose a Deep Learning method for affective algorithmic composition that can be controlled to generate music with a given sentiment. This method is based on the work of Radford et al. \cite{radford_2017} which generates product reviews (in textual form) with sentiment.
-
-Radford et al. \cite{radford_2017} used a single-layer multiplicative LSTM (mLSTM) network \cite{krause2017} with 4096 neurons to learn a character-based language model from a sequence of UTF-8 encoded characters. The trained mLSTM was fine-tuned with an extra linear layer to classify sentiment in text. During fine-tuning, the pre-trained weights of the mLSTM were kept frozen, and only the weights of the extra classification layer were trained. Moreover, L1 regularization was used during fine-tuning to enforce a sparse set of weights in the classification layer. This work uses the same models and training procedures to compose music with a target sentiment. Instead of characters, this work represents music pieces as sequences of tokens from a vocabulary representing events retrieved from MIDI files. Sentiment is perceived in music due to several features such as melody, harmony, tempo, and timbre\cite{kim2010music}. This data representation attempts to encode a large part of these features\footnote{Constrained by the features one can extract from MIDI data.} using a small set of words:
-
-% The hidden state of the model
-% serves as an online summary of the sequence which encodes all information
-% the model has learned to preserve that is relevant to predicting the future
-% bytes of the sequence.
-
-% \begin{center}
-% \begin{tikzpicture}
-%     \draw[thick,->] (0,2) node[anchor=south] {input} -- (1,2);
-
-%     \draw (1,1) -- (1.5,1) -- (1.5,3) -- (1,3)  -- (1,1);
-
-%     \draw[thick,->] (1.5,2) node [anchor=south, rotate=90] {Embed.} -- (2.5,2);
-
-%     \draw (2.5,0) -- (3,0) -- (3,4) -- (2.5,4) -- (2.5,0);
-
-%     \draw[thick,->] (3,2) node [anchor=south, rotate=90] {mLSTM} -- (4,2);
-
-%     \draw (4,1) -- (4.5,1) -- (4.5,3) -- (4,3) -- (4,1);
-
-%     \draw[thick,->] (4.5,2) node [anchor=south, rotate=90] {Softmax} -- (5.5,2) node[anchor=south] {output};
-% \end{tikzpicture}
-% \captionof{figure}{Architecture of the mLSTM used to process text.}
-% \label{fig:mlstm}
-% \end{center}
-
-% This mLSTM was trained on the Amazon product review dataset, which contains over 82 million product reviews from May 1996 to July 2014 amounting to over 38 billion training bytes \cite{He2016}. Radford et al. \cite{radford_2017} used the trained mLSTM to encode sentences from four different Sentiment Analysis datasets. The encoding is performed by initializing the the states to zeros and processing the sequence character-by character. The final hidden states of the mLSTM are used as a feature representation. With the encoded datasets, Radford et al. \cite{radford_2017} trained a simple logistic regression classifier with L1 regularization and outperformed the state-of-the-art methods at the time using 30-100x fewer labeled examples.
-% By inspecting the relative contributions of features on various datasets,
-% Radford et al. \cite{radford_2017} discovered a single unit within the
-% mLSTM that directly corresponded to sentiment. Because the mLSTM was
-% trained as a generative model, one can simply set the value of the
-% sentiment unit to be positive or negative and the model generates
-% corresponding positive or negative reviews.
+\citet{radford_2017} used a single-layer multiplicative LSTM (mLSTM) network \cite{krause2017} with 4096 neurons to learn a character-based language model from a sequence of UTF-8 encoded characters. The trained mLSTM was fine-tuned with an extra linear layer to classify sentiment in text. During fine-tuning, the pre-trained weights of the mLSTM were kept frozen, and only the weights of the extra classification layer were trained. Moreover, L1 regularization was used during fine-tuning to enforce a sparse set of weights in the classification layer. This work uses the same models and training procedures to compose music with a target sentiment. Instead of characters, this work represents music pieces as sequences of tokens from a vocabulary representing events retrieved from MIDI files. Sentiment is perceived in music due to several features such as melody, harmony, and tempo \cite{kim2010music}. The proposed representation attempts to encode as many music features\footnote{Constrained by the features one can extract from MIDI data.} as possible while keeping the vocabulary small:
 
 \begin{itemize}
-    \item ``n\_[pitch]'': play note with given pitch number: any integer from 0 to 127.
-    \item ``d\_[duration]\_[dots]'': change the duration of the following notes to a given
-    duration type with a given amount of dots. Types are breve, whole, half, quarter,
+    \item \textbf{n\_[pitch]}: play a note with a given pitch number (any integer from 0 to 127).
+    \item \textbf{d\_[duration]\_[dots]}: change the duration of the following notes to a given
+    duration with a given amount of dots. Duration types are breve, whole, half, quarter,
     eighth, 16th and 32nd. Dots can be any integer from 0 to 3.
-    \item ``v\_[velocity]'': change the velocity of the following  notes to a given velocity (loudness) number. Velocity is discretized in
+    \item \textbf{v\_[velocity]}: change the velocity of the following  notes to a given velocity (loudness) number. Velocity is discretized in
     bins of size 4, so it can be any integer in the set $V = {4, 8, 12, \dots, 128}$.
-    \item ``t\_[tempo]'': change the tempo of the piece to a given tempo in bpm. Tempo is also discretized in bins of size 4, so it can be any integer in the set $T = {24, 28, 32, \dots, 160}$.
-    \item ``.'': end of time step. Each time step is one sixteenth note long.
-    \item ``\textbackslash n'': end of piece.
+    \item \textbf{t\_[tempo]}: change the tempo of the piece to a given tempo in bpm. Tempo is also discretized in bins of size 4, so it can be any integer in the set $T = {24, 28, 32, \dots, 160}$.
+    \item \textbf{$\cdot$ (dot)}: end of time step. Each time step is one sixteenth note long.
+    \item \textbackslash \textbf{n}: end of piece.
 \end{itemize}
 
-For example, Figure \ref{fig:enc_ex} shows the encoding of the first two time steps of the first measure of the Legend of Zelda - Ocarina of Time's Prelude of Light. The first time step sets the tempo to 120bpm, the velocity of the following notes to 76, and plays the D Major Triad for the duration of a whole note. The second time step sets the velocity to 84 and plays a dotted quarter A5 note. The total size of this vocabulary is 225, and it represents both the composition and performance elements of a piece (timing and dynamics).
+For example, Figure \ref{fig:enc_ex} shows the encoding of the first two time steps of the first measure of the \textit{Prelude of Light} from the \textit{Legend of Zelda - Ocarina of Time} . The first time step sets the tempo to 120bpm, the velocity of the following notes to 76, and plays the D Major Triad for the duration of a whole note. The second time step sets the velocity to 84 and plays a dotted quarter A5 note. The total size of this vocabulary is 225, and it represents both the composition and performance elements of a piece (timing and dynamics).
 
 \begin{figure}[!h]
  \centering
- \includegraphics[width=.95\columnwidth]{imgs/ismir19/encoding.pdf}
+ \includegraphics[width=.9\columnwidth]{imgs/ismir19/encoding.pdf}
 \begin{spverbatim}
         t_120 v_76 d_whole_0 n_50 n_54 n_57 v_92 d_eighth n_86 . . v_84
         d_quarter_1 n_81 . .
@@ -129,19 +76,19 @@ For example, Figure \ref{fig:enc_ex} shows the encoding of the first two time st
 
 \section{Sentiment Analysis Evaluation}
 
-The fine-tuning approach (LM + linear sentiment classification layer) proposed in this work is initially evaluated in the sentiment classification task. First, a mLSTM LM is pre-trained with the unlabelled pieces of the VGMIDI dataset. Then, the pre-trained LM layers are frozen, and an additional linear layer is stacked on top of it. The resulting model is trained as a sentiment classifier with the labeled pieces of the VGMIDI dataset. This fine-tuned LM model was compared against a baseline mLSTM network trained directly on the supervised sentiment classification task. The baseline method uses only labeled MIDI phrases to train a classification mLSTM to predict the sentiment for the phrase.
+The fine-tuning approach proposed in this work is initially evaluated in the sentiment classification task. First, an mLSTM $L$ is pre-trained as a LM with the unlabeled pieces of the VGMIDI dataset. Then, the pre-trained weights of $L$ are frozen, and an additional linear layer $C_f$ is stacked on top of $L$. The resulting model $L + C_f$ is trained as a sentiment classifier with the labeled pieces of the VGMIDI dataset. The final model $L + C_f$ is compared against a baseline mLSTM $C_s$ trained directly on the supervised sentiment classification task. In other words, $C_s$ is trained as a sentiment classifier only with the labeled MIDI phrases (no pre-training involved).
 
-The unlabelled pieces used to train the LM were augmented in order to create additional training examples, following the methodology of Oore et al. \cite{oore2017learning}. The augmentation consists of time stretching (making each piece up to 5\% faster or slower) and transposition (raising or lowering the pitch of each piece by up to a major third). All these pieces and transformations are encoded according to the proposed word-based representation (see Section \ref{sec:representation}). Finally, the encoded pieces were shuffled, and 90\% of them were used for training and 10\% for testing. The training set was divided into three shards of similar size (approximately 18,500 pieces each -- 325MB), and the testing set was combined into one shard (approximately 5800 pieces -- 95MB).
+The unlabeled pieces used to train $L$ are augmented in order to create additional training examples, following the methodology of Oore et al. \cite{oore2017learning}. The augmentation consists of time stretching (making each piece up to 5\% faster or slower) and transposition (raising or lowering the pitch of each piece by up to a major third). All these pieces and transformations are encoded according to the proposed word-based representation (see Section \ref{sec:model}). Finally, the encoded pieces are shuffled, and 90\% of them are used for training and 10\% for testing. The training set is divided into three shards of similar size (approximately 18,500 pieces each -- 325MB), and the testing set is combined into one shard (approximately 5800 pieces -- 95MB).
 
-Six different sizes (number of neurons in the mLSTM layer) were compared for the LM: 128, 256, 512, 1024, 2048, and 4096. For each size, the LM was trained for 4 epochs using the 3 training shards. Weights were updated with the Adam optimizer after processing sequences of 256 words on mini-batches of size 32. The mLSTM hidden and cell states were initialized to zero at the beginning of each shard. They were also persisted across updates to simulate full-backpropagation and allow for the forward propagation of information outside of a given sequence \cite{radford_2017}. Each sequence is processed by an embedding layer (which is trained together with the mLSTM layer) with 64 neurons before passing through the mLSTM layer. The learning rate was set to $5*10^6$ at the beginning and decayed linearly (after each epoch) to zero over the course of training.
+Six different sizes (number of neurons in the hidden layer) are compared for $L$: 128, 256, 512, 1024, 2048, and 4096. For each size, $L$ is trained for 4 epochs using the 3 training shards. Weights are updated with the Adam optimizer after processing sequences of 256 words on mini-batches of size 32. The hidden and cell states of $L$ are initialized to zero at the beginning of each shard. They are also persisted across updates to simulate full-backpropagation and allow for the forward propagation of information outside of a given sequence \cite{radford_2017}. Each sequence is processed by an embedding layer (which is trained together with the mLSTM layer) with 64 neurons before passing through the mLSTM layer. The learning rate is initialized to $5*10^6$ and decayed linearly (after each epoch) to zero over the course of training.
 
-Each variation of the LM was evaluated with a forward pass on the test shard using mini-batches of size 32. Table \ref{tab:gen_anal} shows the average\footnote{Each mini-batch reports one loss.} cross entropy loss for each variation of the mLSTM LM. The average cross entropy loss decreases as the size of the mLSTM increases, reaching the best result (loss 1.11) when size is equal to 4096. Thus, the variation with 4096 neurons was used to proceed with the sentiment classification experiments.
+Each $L$ variation is evaluated with a forward pass on the test shard using mini-batches of size 32. Table \ref{tab:gen_anal} shows the average\footnote{Each mini-batch reports one loss.} cross entropy loss for each variation of $L$. The average cross entropy loss decreases as the size of $L$ increases, reaching the best result (loss 1.11) when the size is equal to 4096. Thus, the variation with 4096 neurons is used to proceed with the sentiment classification experiments.
 
 \begin{table}[!h]
  \begin{center}
  \begin{tabular}{cc}
   \hline
-  \textbf{mLSTM Neurons} & \textbf{Average Cross Entropy Loss}\\ \hline
+  \textbf{mLSTM Size} & \textbf{Average Cross Entropy Loss}\\ \hline
   128 & 1.80   \\
   256  & 1.61  \\
   512  & 1.41  \\
@@ -150,13 +97,13 @@ Each variation of the LM was evaluated with a forward pass on the test shard usi
   4096 & 1.11  \\ \hline
  \end{tabular}
 \end{center}
-\caption{Average cross entropy loss of the generative mLSTM with different amount of neurons.}
+\caption{Average cross entropy loss of the mLSTM LM with different size (number of neurons in the hidden layer).}
  \label{tab:gen_anal}
 \end{table}
 
-After training the LM, an extra linear sentiment classification layer is stacked on top of the base LM and trained with the 966 labeled phrases of the VGMIDI dataset. Here, stacking means passing the final cell states of the mLSTM as input to the linear classification layer. During this fine-tuning step, the base layers of the LM are frozen, which means only the weights of the stacked classification layer are updated. Moreover, these extra layer is trained with L1 regularization to shrink the least important of the 4096 feature weights to zero. This ends up highlighting the generative mLSTM neurons that contain most of the sentiment signal.
+After training $L$, an extra linear sentiment classification layer $C_f$ is stacked on top of $L$ and trained on the 966 labeled phrases of the VGMIDI dataset. Here, stacking means passing the final cell state of $L$ as input to $C_f$. During this fine-tuning step, the base layers of $L$ are frozen, which means only the weights of $C_f$ are updated. Moreover, $C_f$ is trained with L1 regularization to shrink the least important of the 4096 feature weights to zero. This ends up highlighting the neurons in $L$ that contain most of the sentiment signal.
 
-The fine-tuning approach (LM + linear sentiment classification layer) was compared against the baseline supervised mLSTM. This is an mLSTM with exactly the same architecture and size as the fine-tuned version but trained in a fully supervised way. This supervised mLSTM was trained with the same word-based representation of the phrases, but they were padded with silence (the symbol ``.'') in order to equalize their length. Training parameters were set to be the same used to train the base LM. Both methods were evaluated using a 10-fold cross-validation approach, where the test folds have no phrases that appear in the training folds. Table \ref{tab:sent_anal} shows the sentiment classification accuracy of both approaches.
+The fine-tuning approach $L + C_f$ was compared against the baseline supervised mLSTM $C_s$, which is an mLSTM with exactly the same architecture and size as $L + C_f$ but trained in a fully supervised way. This supervised mLSTM was trained with the same word-based representation of the phrases, but they were padded with silence (the symbol ``.'') in order to equalize their length. Training parameters were set to be the same used to train the base LM. Both methods were evaluated using a 10-fold cross-validation approach, where the test folds have no phrases that appear in the training folds. Table \ref{tab:sent_anal} shows the sentiment classification accuracy of both approaches.
 
 \begin{table}[!h]
  \begin{center}
