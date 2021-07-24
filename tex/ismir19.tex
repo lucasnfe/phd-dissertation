@@ -97,33 +97,35 @@ Each $L$ variation is evaluated with a forward pass on the test shard using mini
   4096 & 1.11  \\ \hline
  \end{tabular}
 \end{center}
-\caption{Average cross entropy loss of the mLSTM LM with different size (number of neurons in the hidden layer).}
+\caption{Average cross entropy loss of the mLSTM LM ($L$) with different size (number of neurons in the hidden layer).}
  \label{tab:gen_anal}
 \end{table}
 
 After training $L$, an extra linear sentiment classification layer $C_f$ is stacked on top of $L$ and trained on the 966 labeled phrases of the VGMIDI dataset. Here, stacking means passing the final cell state of $L$ as input to $C_f$. During this fine-tuning step, the base layers of $L$ are frozen, which means only the weights of $C_f$ are updated. Moreover, $C_f$ is trained with L1 regularization to shrink the least important of the 4096 feature weights to zero. This ends up highlighting the neurons in $L$ that contain most of the sentiment signal.
 
-The fine-tuning approach $L + C_f$ was compared against the baseline supervised mLSTM $C_s$, which is an mLSTM with exactly the same architecture and size as $L + C_f$ but trained in a fully supervised way. This supervised mLSTM was trained with the same word-based representation of the phrases, but they were padded with silence (the symbol ``.'') in order to equalize their length. Training parameters were set to be the same used to train the base LM. Both methods were evaluated using a 10-fold cross-validation approach, where the test folds have no phrases that appear in the training folds. Table \ref{tab:sent_anal} shows the sentiment classification accuracy of both approaches.
+The fine-tuning approach $L + C_f$ was compared against the baseline supervised mLSTM $C_s$, which has exactly the same architecture and size as $L + C_f$ but trained in a fully supervised way (no pre-trained LM involved).
+% This supervised mLSTM was trained with the same word-based representation of the phrases, but they were padded with silence (the symbol ``.'') in order to equalize their length.
+The training parameters for both $C_f$ and $C_s$ were set to be the same used to train $L$. Both methods were evaluated using a 10-fold cross-validation approach, where the test folds have no phrases that appear in the training folds. Table \ref{tab:sent_anal} shows the sentiment classification accuracy of both approaches.
 
 \begin{table}[!h]
  \begin{center}
  \begin{tabular}{lc}
   \hline
   \textbf{Method} & \textbf{Test Accuracy} \\ \hline
-  Fine-tuned mLSTM-4096 & 89.83 $\pm$ 3.14\\
-  Baseline  mLSTM-4096 & 60.35 $\pm$ 3.52 \\
+  Fine-tuned mLSTM-4096 ($L + C_f$) & 89.83 $\pm$ 3.14\\
+  Baseline mLSTM-4096 ($C_s$) & 60.35 $\pm$ 3.52 \\
   \hline
  \end{tabular}
 \end{center}
-\caption{Average (10-fold cross validation) sentiment classification accuracy of both generative (with logistic regression) and supervised mLSTMs.}
+\caption{Average (10-fold cross validation) sentiment classification accuracy of both fine Fine-tuned mLSTM-4096 ($L + C_f$) and Baseline mLSTM-4096 ($C_s$).}
  \label{tab:sent_anal}
 \end{table}
 
-The fine-tuned mLSTM achieved an accuracy of 89.83\%, outperforming the supervised mLSTM by 29.48\%. The supervised mLSTM accuracy of 60.35\% suggests that the amount of labeled data (966 phrases) was not enough to learn a good mapping between phrases and sentiment. The accuracy of the fine-tuned mLSTM shows that it is capable of learning, in an unsupervised way, a good representation of sentiment in symbolic music. This is an important result for two reasons. First, since the higher accuracy of fine-tuned mLSTM is derived from unlabeled data, it will be easier to improve this over time using additional (less expensive) unlabeled data instead of the supervised mLSTM approach, which requires additional (expensive) labeled data. Second, because the mLSTM LM was trained to predict the next word in a sequence, it can be used as a music generator. Since it is combined with a sentiment predictor, it opens up the possibility of generating music consistent with a desired sentiment. This idea is explored in the following section.
+The fine-tuned mLSTM ($L + C_f$) achieved an accuracy of 89.83\%, outperforming the baseline mLSTM ($C_s$) by 29.48\%. The lower accuracy (60.35\%) of $C_s$ suggests that the amount of labeled data (966 phrases) was not enough to learn a good mapping between phrases and sentiment. The higher accuracy (89.83\%) of $L + C_f$ shows that $L$ is capable of learning, in an unsupervised way, a good representation of sentiment in symbolic music. This is an important result for two reasons. First, since the higher accuracy of $L + C_f$ is derived from unlabeled data, it will be easier to improve this over time using additional (less expensive) unlabeled data instead of $C_s$, which requires additional (expensive) labeled data. Second, because $L$ was trained to predict the next word in a sequence, it can be used as a music generator. Since $L$ is combined with a sentiment predictor, it opens up the possibility of generating music consistent with a desired sentiment. This idea is explored in the following section.
 
 \section{Generative Evaluation}
 
-To control the sentiment of the music generated by the fine-tuned mLSTM, one has to find the subset of neurons that contain the sentiment signal by exploring the weights of the linear sentiment classification layer. As shown in Figure \ref{fig:final_weights}, the linear classification layer trained with L1 regularization uses 161 neurons out of 4096. Unlike the results of Radford et al. \cite{radford_2017}, the fine-tuning step did not store the sentimental in a single neuron. Instead, the sentiment signal was stored across many neurons in a more balanced way. Therefore, one cannot simply change the values of one neuron to control the sentiment of the output music.
+To control the sentiment of the music generated by the fine-tuned mLSTM ($L + C_f$), one has to find the subset of neurons in $L$ that contain the sentiment signal by exploring the weights of the linear sentiment classification layer $C_f$. As shown in Figure \ref{fig:final_weights}, $C_f$ trained with L1 regularization uses 161 neurons out of 4096. Unlike the results of \citet{radford_2017}, the fine-tuning step did not store the sentimental in a single neuron. Instead, the sentiment signal was stored across many neurons in a more balanced way. Therefore, one cannot simply change the values of one neuron to control the sentiment of the output music.
 
 \begin{figure}[!h]
  \centering
@@ -132,24 +134,22 @@ To control the sentiment of the music generated by the fine-tuned mLSTM, one has
  \label{fig:final_weights}
 \end{figure}
 
-A Genetic Algorithm (GA) was used to optimize the 161 L1 neurons' weights to lead the fine-tuned mLSTM to generate only positive or negative pieces. Each individual in the population of this GA has $161$ real-valued genes representing a small noise to be added to the weights of the $161$ L1 neurons. The fitness of an individual is computed by (i) adding the genes of the individual to the weights (vector addition) of the $161$ L1 neurons of the generative mLSTM, (ii) generating $P$ pieces with this mLSTM, (iii) using the logistic regression model to predict these $P$ generated pieces and (iv) calculating the mean squared error of the $P$ predictions given a target sentiment $s \in S = \{0, 1\}$.
+A genetic algorithm (GA) was used to optimize the 161 L1 weights to lead $L$ to generate only positive or negative pieces. Each individual in the population of this GA has $161$ real-valued genes representing a small noise to be added to the $161$ L1 weights of $L$. The fitness of an individual is computed by (i) adding the genes of the individual to the $161$ L1 weights (vector addition) of $L$, (ii) generating $P$ pieces with the updated $L$, (iii) using $C_f$ to predict these $P$ generated pieces, and (iv) calculating the mean squared error of the $P$ predictions given a target sentiment $s \in S = \{0, 1\}$. The GA starts with a random population of size 100 where each gene of each individual is a uniformly sampled random number $-2 \leq r \leq 2$. For each generation, the GA (i) evaluates the current population, (ii) selects 100 parents via a roulette wheel with elitism, (iii) recombines the parents (crossover) taking the average of their genes, and (iv) mutates each new recombined individual (new offspring) by randomly setting each gene to a uniformly sampled random number $-2 \leq r \leq 2$.
 
-The GA starts with a random population of size 100 where each gene of each individual is a uniformly sampled random number $-2 \leq r \leq 2$. For each generation, the GA (i) evaluates the current population, (ii) selects 100 parents via a roulette wheel with elitism, (iii) recombines the parents (crossover) taking the average of their genes, and (iv) mutates each new recombined individual (new offspring) by randomly setting each gene to a uniformly sampled random number $-2 \leq r \leq 2$.
+This GA was executed twice: once to optimize $L$ for generating positive pieces and once for negative pieces. Each execution optimized the individuals during 100 epochs with a crossover rate of 95\% and a mutation rate of 10\%. To calculate each individual's fitness, $P$=30 pieces were generated with 256 words each, starting with the symbol ``.'' (end of time step). The optimization for positive and negative generation resulted in best individuals with fitness $0.16$ and $0.33$, respectively. This means that if one adds the best individual's genes of the final population to the $161$ L1 weights of $L$, one generates positive pieces with 84\% accuracy and negative pieces with 67\% accuracy.
 
-This GA was executed twice: once to optimize the fine-tuned mLSTM for generating positive pieces and once for negative pieces. Each execution optimized the individuals during 100 epochs with a crossover rate of 95\% and mutation rate of 10\%. To calculate each individual's fitness, $P$=30 pieces were generated with 256 words each, starting with the symbol ``.'' (end of time step). The optimization for positive and negative generation resulted in best individuals with fitness $0.16$ and $0.33$, respectively. This means that if one adds the genes of the best individual of the final population to the weights of the generative mLSTM, one generates positive pieces with 84\% accuracy and negative pieces with 67\% accuracy.
-
-After these two optimization processes, the genes of the best final individual of the positive optimization were added to the weights of the 161 L1 neurons of the trained LM. A set of 30 pieces was then generated with 1000 words starting with the symbol ``.'' (end of time step) and 3 of them were randomly selected. The same process was repeated using the genes of the best final individual of the negative execution. Annotators were asked to label these 6 generated pieces via Amazon MTurk, using the same methodology described in Section \ref{sec:data_collection}. Figure \ref{fig:generated_eval} shows the average valence per measure of each of the generated pieces.
+After these two optimization processes, the genes of the best final individual of the positive optimization were added to the $161$ L1 weights of $L$. A set of 30 pieces was then generated with 1000 words starting with the symbol ``.'' (end of time step) and 3 of them were randomly selected. The same process was repeated using the genes of the best final individual of the negative execution. Annotators were asked to label these 6 generated pieces via Amazon MTurk, using the same methodology described in Section \ref{sec:data_collection}. Figure \ref{fig:generated_eval} shows the average valence per measure of each of the generated pieces.
 
 \begin{figure}[!h]
- \includegraphics[width=\columnwidth]{imgs/ismir19/means_pos.png}
- \includegraphics[width=\columnwidth]{imgs/ismir19/means_neg.png}
+ \includegraphics[width=0.9\columnwidth]{imgs/ismir19/means_pos.png}
+ \includegraphics[width=0.9\columnwidth]{imgs/ismir19/means_neg.png}
  \caption{Average valence of the 6 generated pieces, as determined by human annotators.
  %Note that the averages are calculated after clustering the annotations and selecting the cluster
  with least variance.}
  \label{fig:generated_eval}
 \end{figure}
 
-These results showed that human annotators agreed that the three positive generated pieces are indeed positive. The generated negative pieces are more ambiguous, having both negative and positive measures. However, as a whole, the negative pieces have lower valence than the positive ones. This suggests that the best negative individual (with fitness $0.33$) encountered by the GA was not good enough to control the mLSTM to generate complete negative pieces. Moreover, the challenge to optimize the L1 neurons suggests that there are more positive pieces than negative ones in the 3 shards used to train the generative mLSTM.
+These results showed that human annotators agreed that the three positive generated pieces are indeed positive. The generated negative pieces are more ambiguous, having both negative and positive measures. However, as a whole, the negative pieces have lower valence than the positive ones. This suggests that the best negative individual (with fitness $0.33$) encountered by the GA was not good enough to control the LM to generate complete negative pieces. Moreover, the challenge to optimize the L1 weights suggests that there are more positive pieces than negative ones in the 3 unlabelled shards used to train the LM.
 
 \section{Conclusions}
 
