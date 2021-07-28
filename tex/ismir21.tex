@@ -19,7 +19,7 @@ This encoding scheme yields a vocabulary with 44,346 tokens. This is orders of m
 
 % In this work, the probability of a sequence of tokens $s$ according to the LM is denoted as $L(s)$ and the probability of the sequence $s$ added of the token $l$ as $L(s, l)$.
 
-\section{Emotion Classification Model}
+\section{Music Emotion Classifier}
 \label{sec:emotion_classifier}
 
 In the previous works presented in this dissertation \cite{ferreira_2019, ferreira2020computer}, it has been shown that fine-tuning a LM with an extra classification head yields a better model than training a classifier from scratch with the same architecture of the LM. A similar approach is used in this work, by fine-tuning a MT instead of an LSTM \cite{ferreira_2019} or a GPT-2 Transformer \cite{ferreira2020computer}. MT is fine-tuned with the labeled pieces of the VGMIDI dataset. In \cite{ferreira_2019, ferreira2020computer}, symbolic music emotion classification is approached as two independent binary problems, one for valence and one for arousal. This work defines it as a multiclass problem. Four ``emotions'' are considered: high valence and arousal (E0), low valence and high arousal (E1), low valence and arousal (E2), and high valence and low arousal (E4). Each labeled piece in the VGMIDI dataset has a valence label $v \in [-1, 1]$ and a arousal label $a \in [-1, 1]$. A pair of values are mapped to a categorical label (E0, E1, E2, or E3) by getting the quadrant in which $(v,a)$ lie in. As shown in Figure \ref{fig:va_mapping}, a piece with values $(1,1)$ is mapped to E0, $(-1,1)$ is mapped to E1, $(-1,-1)$ is mapped to E2 and $(1, -1)$ is mapped to E3.
@@ -83,7 +83,7 @@ In the next iteration, PUCT will perform the four steps described above, but wit
 
 PUCT performs $d$ iterations before deciding which symbol will be added to the sequence represented at the root of the tree. That is, the search budget of $d$ iterations is to decide the next symbol of the sequence. Let $n$ be the root of the tree. The symbol $l$ that will be added to the sequence $n$ is sampled from the distribution given by the values $\frac{N(n)}{\sum_{l} N(n, l)}$. The node $n'$ resulting from the addition of $l$ to $n$ becomes the new root of the tree and another PUCT search is performed with budget $d$ to choose the next symbol to be added to $n'$. This process is repeated until the next symbol added is the end-of-music symbol. The PUCT search can be seen as an operator that changes the probability distribution over symbols given by the language model such that it accounts for the target emotion model. This is because the distribution given by $\frac{N(n)}{\sum_{l} N(n, l)}$ will favor symbols that lead to pieces matching the target emotion as nodes representing such pieces are visited more often during search.
 
-\section{Experiments}
+\section{Empirical Evaluation}
 
 MCTS is evaluated with two listening tests (user studies), one for measuring the quality of the generated pieces and one for measuring the accuracy in conveying a target emotion. All experiments were performed via Amazon Mechanical Turk (MTurk). For both experiments, MCTS is compared against SBBS, TopK sampling, and human composed pieces (from the validation data used with the emotion classifier). MCTS is not compared against \citet{ferreira_2019} because their approach is limited to sentiment. For each model, 10 pieces are generated with 512 tokens for each target emotion $e \in [0, 1, 2, 3]$ (total of 160 pieces). Each model generated 40 pieces with the same set of 40 prime sequences (one prime per piece). Each prime sequence is 32 tokens long and is selected at random from the VGMIDI validation pieces with the target emotion. For the ``human'' model, pieces are ``generated'' by simply extracting the first 512 tokens of the piece with the given prime.
 
@@ -91,7 +91,7 @@ To generate the pieces, a MT LM is first trained with 4 layers (transformer bloc
 
 % TODO: add prefixes sizes
 
-\subsection{Quality}
+\subsection{Quality Listening Test}
 
 In the quality listening test, a pairwise comparison is performed similar to the human evaluation in \cite{huang2018music}. Human subjects were presented with two generated pieces from two different models that were given the same priming sequence. The two pieces were presented side-by-side and the human subjects were asked to select which one is more musical using a 5-point Likert scale. In this scale, 1 means "Left piece is much more musical", 2 means "Left piece is slightly more musical", 3 means "Tie", 4 means "Right piece is slightly more musical" and 5 means "Right piece is much more musical". The order of the two pieces was randomized to avoid ordering bias. Each of the 240 pairs of generated pieces were evaluated by 3 MTurk workers. In order to reduce noise in the results (mainly caused by random choices in Amazon MTurk), a test evaluation is included for each human subject. This test is another pair of pieces to be evaluated with the same Likert scale, but one piece is a human composed piece and the other one is sampled from the LM without TopK filtering and temperature equal to 1.5 (forcing the sample to have poor quality). The subjects are also asked to briefly justify their choice with 1-3 short sentences. Participants who failed the test evaluation (choosing the sampled piece as more musical) or didn't write explanations longer than 5 words were filtered out. In total, this experiment yielded 389 comparisons. Each pair was evaluated at least once.
 
@@ -123,7 +123,7 @@ Table \ref{tab:quality} shows the results of the quality test. The top part of t
     \label{tab:quality}
 \end{table}
 
-\subsection{Emotion}
+\subsection{Emotion Listening Test}
 
 In the emotion listening test, human subjects were asked to annotate the generated pieces according to the circumplex model of emotion using the same tool designed to annotate the VGMIDI dataset \cite{ferreira_2019}. An annotation result is a time series of valence-arousal pairs where each element corresponds to a chunk (a bar if the piece has 4/4 time signature) of the piece. For this experiment, 3 MTurk workers were assigned for each piece generated by the MCTS, SBBS, and TopK methods (total of 360 annotations). Human pieces are not reannotated because they are the ground truth data used to train the emotion classification model that is base for both MCTS and SBBS. No annotations were filtered out in this experiment.
 
