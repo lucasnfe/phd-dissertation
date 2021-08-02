@@ -15,26 +15,27 @@ MCTS is evaluated with two listening tests, one to measure the quality of the ge
 
 \section{Language Model}
 
-Music Transformer (MT) \cite{huang2018music} is currently one of the state-of-the-art methods for symbolic music generation and hence it is used as a base LM for MCTS. This MT LM is trained on the unlabelled pieces of the VGMIDI dataset. Originally, the VGMIDI dataset had 728 unlabelled pieces, but it has been expanded to 3,640 pieces in this work. The new pieces are piano arrangements of video game music created by the NinSheetMusic community\footnote{\url{https://www.ninsheetmusic.org/}}. The VGMIDI dataset has been used, as opposed to MAESTRO \cite{hawthorne2018enabling} or other large dataset of symbolic music, to be able to train both the language and emotion models on similar datasets.
-The VGMIDI pieces are encoded using a different vocabulary than the original one proposed with MT \cite{huang2018music}. Aiming at reducing the length of the music sequences, the MIDI files are mapped to sequences using a large expressive vocabulary instead of a compact one. To create a sequence from a MIDI file, the starting times of all the notes are discretized into a sequence of time-steps. Then, each time-step is processed in order, generating a token $n_{p, d, v}$ for each note in the time-step. The three parameters of a note token $n_{p, d, v}$ are pitch $p$, duration $d$ and velocity $v$, respectively. In order to constrain the possible combinations of note tokens, the pitch values are limited to $30 \leq p \leq 96$. Duration $d$ is limited by the types: breve, whole, half, quarter, eighth, 16th and 32nd. The dotted versions of these types (maximum of 3 dots) are also considered. Velocities are limited to the values $v \in [32, 36, 40, \cdots, 128]$. After processing each time step, a token $r_d$ is generated representing a rest with a given duration $d$. The token ``$.$'' (period) is included at the end of all time-steps to represent the end of the piece.
+Music Transformer (MT) \cite{huang2018music} is currently one of the state-of-the-art methods for symbolic music generation and hence it is used as a base LM for MCTS. This MT LM is trained on the unlabelled pieces of the VGMIDI dataset. Originally, the VGMIDI dataset had 728 unlabelled pieces, but it has been expanded to 3,640 pieces in this work. The new pieces are piano arrangements of video game music created by the NinSheetMusic community\footnote{\url{https://www.ninsheetmusic.org/}}. The VGMIDI dataset has been used, as opposed to MAESTRO \cite{hawthorne2018enabling} or other large dataset of symbolic music, to be able to train both the LM and the music emotion classifier on similar datasets.
 
-This encoding scheme yields a vocabulary with 44,346 tokens. This is orders of magnitude larger than most of the other vocabularies in the literature \cite{briot2017deep}. By having more tokens, MCTS has more options to choose from at any given point of the generative process, which increases the search complexity. On the other hand, it considerably reduce the length of the encoded pieces, which reduces the search complexity. MCTS mitigates the effects of having more options to choose from by only considering the top $k$ tokens according to the LM at any decision point of the generative process. Moreover, according to \citet{holtzman2018learning}, LMs tend to generate less repetitive sequences with larger vocabularies.
+The VGMIDI pieces are encoded using a different vocabulary than the original one proposed with MT \cite{huang2018music}. Aiming at reducing the length of the music sequences, the MIDI files are mapped to sequences using a large expressive vocabulary instead of a compact one. To create a sequence from a MIDI file, the starting times of all the notes are discretized into a sequence of time steps. Then, each time step is processed in order, generating a token $n_{p, d, v}$ for each note in the time step. The three parameters of a note token $n_{p, d, v}$ are pitch $p$, duration $d$ and velocity $v$, respectively. In order to constrain the possible combinations of note tokens, the pitch values are limited to $30 \leq p \leq 96$. Duration $d$ is limited by the types: breve, whole, half, quarter, eighth, 16th and 32nd. The dotted versions of these types (maximum of 3 dots) are also considered. Velocities are limited to the values $v \in [32, 36, 40, \cdots, 128]$. After processing each time step, a token $r_d$ is generated representing a rest with a given duration $d$. The token ``$.$'' (period) is included at the end of all time steps to represent the end of the piece.
+
+This encoding scheme yields a vocabulary with 44,346 tokens, which is orders of magnitude larger than most of the other vocabularies in the literature \cite{briot2017deep}. By having more tokens, MCTS has more options to choose from at any given point of the generative process, which increases the search complexity. On the other hand, it considerably reduces the length of the encoded pieces, which reduces the search complexity. MCTS mitigates the effects of having more options to choose from by only considering the top $k$ tokens according to the LM at any decision point of the generative process. Moreover, according to \citet{holtzman2018learning}, LMs with larger vocabularies tend to generate less repetitive sequences.
 
 % In this work, the probability of a sequence of tokens $s$ according to the LM is denoted as $L(s)$ and the probability of the sequence $s$ added of the token $l$ as $L(s, l)$.
 
 \section{Music Emotion Classifier}
 \label{sec:emotion_classifier}
 
-In chapters \ref{ch:ismir19} and \ref{ch:aiide20}, it has been shown that fine-tuning a LM with an extra classification head yields a better model than training a classifier from scratch with the same architecture of the LM. A similar approach is used in this work, by fine-tuning a MT instead of an LSTM \cite{ferreira_2019} or a GPT-2 Transformer \cite{ferreira2020computer}. MT is fine-tuned with the labeled pieces of the VGMIDI dataset. In \cite{ferreira_2019, ferreira2020computer}, symbolic music emotion classification is approached as two independent binary problems, one for valence and one for arousal. This work defines it as a multiclass problem. Four ``emotions'' are considered: high valence and arousal (E0), low valence and high arousal (E1), low valence and arousal (E2), and high valence and low arousal (E4). Each labeled piece in the VGMIDI dataset has a valence label $v \in [-1, 1]$ and a arousal label $a \in [-1, 1]$. A pair of values are mapped to a categorical label (E0, E1, E2, or E3) by getting the quadrant in which $(v,a)$ lie in. As shown in Figure \ref{fig:va_mapping}, a piece with values $(1,1)$ is mapped to E0, $(-1,1)$ is mapped to E1, $(-1,-1)$ is mapped to E2 and $(1, -1)$ is mapped to E3.
+In chapters \ref{ch:ismir19} and \ref{ch:aiide20}, it has been shown that fine-tuning a LM with an extra classification head yields a better model than training a classifier from scratch with the same architecture of the LM. This work follows a similar approach. The MT LM described in the previous section is fine-tuned as a music emotion classifier with the labeled pieces of the VGMIDI dataset. In chapters \ref{ch:ismir19} and \ref{ch:aiide20}, symbolic music emotion classification is approached as two independent binary problems, one for valence and one for arousal. This work defines it as a multiclass problem. Four emotions are considered: high valence and arousal (E0), low valence and high arousal (E1), low valence and arousal (E2), and high valence and low arousal (E4). Each labeled piece in the VGMIDI dataset has a valence label $v \in [-1, 1]$ and an arousal label $a \in [-1, 1]$. A pair of values is mapped to a categorical label (E0, E1, E2, or E3) by getting the quadrant of $(v,a)$. As shown in Figure \ref{fig:va_mapping}, a piece with values $(1,1)$ is mapped to E0, $(-1,1)$ to E1, $(-1,-1)$ to E2, and $(1, -1)$ to E3.
 
 \begin{figure}
  \centering
  \includegraphics[width=0.7\columnwidth]{imgs/ismir21/circumplex.png}
- \caption{Mapping the circumplex model to a categorical model of emotion with four classes: E1, E2, E3, and E4.}
+ \caption{Mapping the circumplex model to a categorical model of emotion with four classes: E0, E1, E2, and E3.}
  \label{fig:va_mapping}
 \end{figure}
 
-This mapping yields 76 pieces with label E0, 38 with label E1, 27 with label E2, and 59 with E3. This multiclass approach is used to simplify the search task of controlling the emotion of the generated pieces: only a single model as an emotion score, instead of a combination of two. Since MCTS evaluates the emotion of sequences of different lengths (see the detail in Section~\ref{sec:puct}), the emotion model is trained with prefixes of different lengths extracted from the labeled pieces. Thus, during training, the classifier learns a mapping of a sequence to an emotion considering different lengths. This is especially helpful to guide the search at the beginning of the generation process, where the number of generated tokens is short, and so the emotion classifier does not have much context to be confident about a prediction.
+This mapping yields 76 pieces with label E0, 38 with label E1, 27 with label E2, and 59 with E3. This multiclass approach is used to simplify the search task of controlling the emotion of the generated pieces: only a single model defines the emotion scores instead of a combination of two models. Since MCTS evaluates the emotion of sequences with different lengths (see Section \ref{sec:puct}), the music emotion classifier is trained with prefixes of different lengths extracted from the labeled pieces. Thus, during training, the classifier learns a mapping of a sequence to an emotion considering different lengths. This is especially helpful to guide the search at the beginning of the generation process, where the number of generated tokens is short, and so the emotion classifier does not have much context to be confident about a prediction.
 
 % In this work, $E$ denotes the emotion model and $E(s, e)$ the probability of a sequence $s$ being perceived as a piece of emotion $e$.
 
@@ -42,49 +43,55 @@ This mapping yields 76 pieces with label E0, 38 with label E1, 27 with label E2,
 \label{sec:puct}
 
 % MCTS
-Monte-Carlo Tree Search (MCTS) is a heuristic search algorithm traditionally used to play board games with large search spaces. Before taking an action at the current game state, MCTS iteratively explores the branches of the search tree, looking ahead to determine how different game moves could lead to stronger or weaker positions of the game. MCTS variations use a variety of algorithms for deciding which branches of the tree to explore next. For example, UCT~\cite{Kocsis2006} uses the UCB1 formula for deciding which branches to expand in each iteration of the algorithm, while AlphaZero uses the PUCT formula~\cite{rosin2011pucb}. This section describes how this work employs PUCT to generate music with a specific target emotion.
+Monte-Carlo Tree Search (MCTS) is a heuristic search algorithm traditionally used to play board games with large search spaces. Before taking an action at the current game state, MCTS iteratively explores the branches of the search tree, looking ahead to determine how different game moves could lead to stronger or weaker states of the game. MCTS variations use a variety of algorithms for deciding which branches of the tree to explore next. For example, UCT~\cite{Kocsis2006} uses the UCB1 formula for deciding which branches to expand in each iteration of the algorithm, while AlphaZero uses the PUCT formula~\cite{rosin2011pucb}. This section describes how this work employs PUCT to generate music with a specific target emotion.
 
-PUCT receives a prefix $x = [x_0, x_1, \cdots, x_t]$ of an existing musical piece as input, which will bias the process; an emotion model $E$; a language model $L$; a set of $k$ symbols that is used to focus the search on the symbols with higher probability according to $L$; a search budget $d$ that defines the amount of search PUCT can perform before adding the next symbol to the musical sequence; and a target perceived emotion $e$. PUCT returns a sequence $x'$ with prefix $x$ for which $E(x', e)$ and $L(x')$ are maximized. PUCT grows a search tree where each node $n$ in the tree represents a sequence of symbols from the vocabulary. The root of the tree represents the prefix $x$ provided as input. Each edge $(n, n')$ from node $n$ to node $n'$ represents the addition of a symbol to the sequence $n$ ($n'$ is one symbol larger than $n$). In this formulation, $n'$ is called a child of $n$, and since each node $n$ represents a sequence $x$, $n$ and $x$ are used interchangeably.
-
-Initially, PUCT's tree is of size one as it only contains the root of the tree. In each iteration, PUCT performs the following steps to add a new node to the tree: (1) selection, (2) expansion, (3) simulation and (4) backpropagation.
+PUCT receives a sequence $x = [x_0, x_1, \cdots, x_t]$ of musical tokens as input, which will bias the generative process; a music emotion classifier $E$; a language model $L$; a parameter $k$ defining the number of top tokens (according to $L$) to consider when deciding the next token; a parameter $d$ defining the number of search iterations PUCT can perform before deciding the next token; and a target emotion $e$. PUCT returns a sequence $x'$ with prefix $x$ for which $E(x', e)$ and $L(x')$ are maximized. PUCT grows a search tree where each node $n$ represents a sequence of tokens from the vocabulary. The root of the tree represents the prefix $x$ provided as input. Each edge $(n, m)$ from node $n$ to node $m$ represents the addition of a token to the sequence $n$ ($m$ is one token larger than $n$). In this formulation, $m$ is called a child of $n$, and since each node $n$ represents a sequence $x$, $n$ and $x$ are used interchangeably. Initially, PUCT's tree is of size one as it only contains the root of the tree. In each iteration, PUCT performs the following steps to add a new node to the tree: (1) \textbf{selection}, (2) \textbf{expansion}, (3) \textbf{simulation}, and (4) \textbf{backpropagation}.
 % We explain each of these steps and their intuition.
 
-\vspace{0.1in}
-\noindent
-\textbf{Selection:} For each node $n$ in the PUCT, the symbol $l$ is selected to maximize Equation \ref{eq:puct},
-where $Q(n, l)$ is a value computed based on the emotion model (explained in the simulation and backpropagation steps), $c$ is an exploration constant, $L(n, l)$ is the language model's probability of adding symbol $l$ to the sequence $n$, $N(n)$ is the number of times node $n$ was visited in the selection step, and $N(n, l)$ is the number of times symbol $l$ was chosen at node $n$ in a selection step.
-\begin{equation}
-\argmax_{l} Q(n, l) + c \times L(n, l) \times \frac{\sqrt{N(n)}}{1 + N(n, l)} \,,
-\label{eq:puct}
-\end{equation}
-\noindent
+\begin{enumerate}
+    \item \textbf{Selection}
 
- In practice, only the $k$ symbols with largest probable value according to the LM are considered in the $\argmax$ operator shown above. This allows the search to focus on sequences that are more promising according to the language model. PUCT recursively selects nodes in the tree according to Equation~\ref{eq:puct} until the symbol $l$ at a node $n$ leads to a sequence whose node $n'$ is not in the PUCT tree.
+    Starting from the current node $n$, PUCT recursively selects the token $l$ that maximizes Equation \ref{eq:puct} until $l$ leads to a node $m$ that is not in the PUCT tree. In Equation \ref{eq:puct}, $Q(n, l)$ is the expected emotion ``reward'' of the sequence $(n, l)$ as given by $E$, $c$ is an exploration constant, $P(n, l)$ is the prior probability of $l$ being the next token from $n$ as given by $L$, $N(n)$ is the number of times node $n$ has been visited in the selection step, and $N(n, l)$ is the number of times token $l$ has been chosen from node $n$ in a selection step.
 
-\vspace{0.1in}
-\noindent
-\textbf{Expansion:} The node $n'$ returned in the selection step is then added to the PUCT tree and its statistics are initialized: $N(n') = 1$, $N(n', l) = 0$ and $Q(n', l) = 0$ for all top $k$ symbols $l$ according to the probability $L(n', l)$.
+    \begin{equation}
+    \argmax_{l} Q(n, l) + c \times P(n, l) \times \frac{\sqrt{N(n)}}{1 + N(n, l)}
+    \label{eq:puct}
+    \end{equation}
 
-\vspace{0.1in}
-\noindent
-\textbf{Simulation:} In this step, the sequence represented in the recently added node $n'$ is evaluated according to the target emotion. The $Q(n, l)$-value (recall that adding $l$ to $n$ generated the node $n'$) is given by $E(n', e)$. The value of $N(n, l) = 1$ as this is the first time $l$ is selected in node $n$.
-%Inspired in the scheme employed in AlphaZero~\cite{alphazero},
-%instead of adding symbols to the sequence node $n'$ represents until reaching an end-of-music symbol,
-%we use $E(n', e)$ as the $Q(n, l)$-value.
+    In practice, only the $k$ tokens with the largest probability according to $L$ are considered in the selection step. This allows PUCT to focus on the sequences that are more promising according to the LM.
 
-\vspace{0.1in}
-\noindent
-\textbf{Backpropagation:} The value of $Q(n, l)$ is used to update the $Q$-values of all the other node-symbol pairs selected in the first step of the algorithm. This is achieved by following the path in the tree from the selection step in reverse order and updating the statistics of each node $n$ and node-symbol pairs $(n, l)$ as follows:
-\begin{align*}
-Q(n, l) &= \frac{Q(n, l) \times N(n, l) + E(n', e)}{N(n, l) + 1} \\
-N(n, l) &= N(n, l) + 1 \,.
-\end{align*}
-The $Q(n, l)$-values are the average $E$-values of sequences with prefix given by $n$. The value of $Q(n, l)$ estimates how continuations of the sequence $n$ added to the symbol $l$ is with respect to the target emotion. The backpropagation step completes an iteration of PUCT.
+    \item \textbf{Expansion}
 
-In the next iteration, PUCT will perform the four steps described above, but with updated values of $N$ and $Q$ for the node-symbol pairs selected in the previous iteration. Equation~\ref{eq:puct} guarantees that the sequences $n$ that maximize the value of $E(n, e)$ are visited more often as they will have larger values of $Q$. The PUCT formula also accounts for the probability given by the language model, giving preference to sequences with higher probability according to $L$. Finally, the term $\frac{\sqrt{N(n)}}{1 + N(n, l)}$ certifies that all nodes have a chance of being explored by the search.
+    The node $m$ returned in the selection step is then added to the PUCT tree and its statistics are initialized: $N(m) = 1$, $N(m, l) = 0$, and $Q(m, l) = 0$ for all top $k$ tokens $l$ according to the probability $L(m, l)$.
+
+    \item \textbf{Simulation}
+
+    The recently added node $m$ is evaluated according to the target emotion $e$. The $Q(n, l)$-value (recall that adding $l$ to $n$ generated the node $m$) is given by $E(m, e)$. The value of $N(n, l)$ is set to $1$ as this is the first time $l$ is selected from node $n$.
+    %Inspired in the scheme employed in AlphaZero~\cite{alphazero},
+    %instead of adding symbols to the sequence node $n'$ represents until reaching an end-of-music symbol,
+    %we use $E(n', e)$ as the $Q(n, l)$-value.
+
+    \item \textbf{Backpropagation}
+
+    The value of $Q(n, l)$ is used to update the $Q$-values of all the other node-token pairs recursively selected in the \textbf{selection step}. This is achieved by following the path in the tree from $n$ to $m$ in reverse order and updating the statistics of each node $n$ in the path according to Equation \ref{eq:puct_backprop}.
+
+   \begin{align}
+   \label{eq:puct_backprop}
+   \begin{split}
+   Q(n, l) &= \frac{Q(n, l) \times N(n, l) + E(m, e)}{N(n, l) + 1} \\
+   N(n, l) &= N(n, l) + 1 \\
+   N(n) &= N(n) + 1
+   \end{split}
+   \end{align}
+
+   The $Q(n, l)$-values are the average $E$-values of the sequences with prefix given by $n$. In other words, the value of $Q(n, l)$ is the average emotion ``reward'' of the sequences with the prefix given by $n$. The backpropagation step completes an iteration of PUCT.
+
+\end{enumerate}
+
+In the next iteration, PUCT will perform the four steps described above, but with updated values of $N$ and $Q$ for the node-token pairs selected in the previous iteration. Equation \ref{eq:puct} guarantees that the sequences $n$ that maximize the value of $E(n, e)$ are visited more often as they will have larger values of $Q$. The PUCT formula also accounts for the probability given by the language model, giving preference to sequences with higher probability according to $L$. Finally, the term $\frac{\sqrt{N(n)}}{1 + N(n, l)}$ certifies that all nodes have a chance of being explored by the search.
 %allows even nodes that are considered unpromising by the language and emotion models to be explored by the search.
 
-PUCT performs $d$ iterations before deciding which symbol will be added to the sequence represented at the root of the tree. That is, the search budget of $d$ iterations is to decide the next symbol of the sequence. Let $n$ be the root of the tree. The symbol $l$ that will be added to the sequence $n$ is sampled from the distribution given by the values $\frac{N(n)}{\sum_{l} N(n, l)}$. The node $n'$ resulting from the addition of $l$ to $n$ becomes the new root of the tree and another PUCT search is performed with budget $d$ to choose the next symbol to be added to $n'$. This process is repeated until the next symbol added is the end-of-music symbol. The PUCT search can be seen as an operator that changes the probability distribution over symbols given by the language model such that it accounts for the target emotion model. This is because the distribution given by $\frac{N(n)}{\sum_{l} N(n, l)}$ will favor symbols that lead to pieces matching the target emotion as nodes representing such pieces are visited more often during search.
+PUCT performs $d$ iterations before deciding which token will be added to the sequence represented at the root of the tree. That is, the search budget of $d$ iterations is to decide the next token of the sequence. Let $n$ be the root of the tree. The token $l$ that will be added to the sequence $n$ is sampled from the distribution given by the values $\frac{N(n)}{\sum_{l} N(n, l)}$. The node $m$ resulting from the addition of $l$ to $n$ becomes the new root of the tree and another PUCT search is performed with budget $d$ to choose the next token to be added to $m$. This process is repeated until a desired number of tokens are generated. The PUCT search can be seen as an operator that changes the probability distribution over tokens given by the language model such that it accounts for the target emotion. This is because the distribution given by $\frac{N(n)}{\sum_{l} N(n, l)}$ will favor tokens that lead to pieces matching the target emotion as nodes representing such pieces are visited more often during search.
 
 \section{Empirical Evaluation}
 
