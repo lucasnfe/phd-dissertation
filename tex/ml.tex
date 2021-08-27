@@ -55,7 +55,7 @@ Note events are organized into a stream format called \textit{track chunk}, whic
 
 \begin{figure}[!h]
  \centering
- \includegraphics[width=\columnwidth]{imgs/background/piano_roll.jpg}
+ \includegraphics[width=\columnwidth]{imgs/background/piano_roll.png}
  \caption{Example of music represented in the piano roll format.}
  \label{fig:piano_roll}
 \end{figure}
@@ -80,12 +80,12 @@ For example, considering a vocabulary $V = \{a, b, c, d, e\}$, the one-hot encod
 % one can train a ML model to learn a LM that can generate music.
 % In early examples, LMs were typically implement with Markov chains and
 % recently LMs are more commonly modeled with artificial neural networks.
-Artificial Neural Networks, or simply Neural Networks (NNs), interconnect a number of simple processing units called \textit{neurons} to learn a function from training examples. These neurons are typically organized into layers. Neurons might be connected to several other neurons in the layer before it, from which it receives data, and several neurons in the layer after it, to which it sends data. NNs can be defined with different \textit{architectures}, i.e. with a different number of layers (\textit{depth}) and different layouts of neuron connections. The first layer of the network is called the \textit{input layer}, and the last one is called the \textit{output layer}. All the intermediate layers are called \textit{hidden layers}. Each neuron in the hidden or output layers takes as input a vector $x$ of incoming connections from the previous layer and assigns a weight vector $w$ to these connections. In its most basic form, the neuron first applies a linear transformation $z = w \dot x + b$ to the inputs $x$, where $b$ is an extra weight called \textit{bias} that is not tied to any neuron of the previous layer. The neuron then uses a nonlinear function called \textit{activation function} $f$ to map the linearly transformed inputs $z$ into an output $\hat{y}$. Figure \ref{fig:nn} shows a three-layer\footnote{Typically, the input layer is not considered when counting the depth of the NN.} NN called \textit{feedforward} network or \textit{multilayer perceptron} (MLP).
+Artificial Neural Networks, or simply Neural Networks (NNs), interconnect a number of simple processing units called \textit{neurons} to learn a function from training examples. These neurons are typically organized into layers. Neurons might be connected to several other neurons in the layer before it, from which it receives data, and several neurons in the layer after it, to which it sends data. NNs can be defined with different \textit{architectures}, i.e. with a different number of layers (\textit{depth}) and different layouts of neuron connections. The first layer of the network is called the \textit{input layer}, and the last one is called the \textit{output layer}. All the intermediate layers are called \textit{hidden layers}. Each neuron in the hidden or output layers takes as input a vector $x$ of incoming connections from the previous layer and assigns a weight vector $w$ to these connections. In its most basic form, the neuron first applies a linear transformation $z = w \dot x + b$ to the inputs $x$, where $b$ is an extra weight called \textit{bias} that is not tied to any neuron of the previous layer. The neuron then uses a nonlinear function called \textit{activation function} $f$ to map the linearly transformed inputs $z$ into an output $y$. Figure \ref{fig:nn} shows a three-layer\footnote{Typically, the input layer is not considered when counting the depth of the NN.} NN called \textit{feedforward} network or \textit{multilayer perceptron} (MLP).
 
 \begin{figure}[!h]
 \centering
 \includegraphics[width=0.6\columnwidth]{imgs/background/ann.png}
-\caption{Diagram of a feedforward neural network \cite{lecun2015deep}. The computations performed by the neurons $l$ (hidden layer H1), $k$ (hidden layer H2), and $l$ (output layer) are highlighted beside them. The bias terms have been removed for clarity.}
+\caption{Diagram of a feedforward neural network \cite{lecun2015deep}. The computations performed by the neurons $j$ (hidden layer L2), $k$ (hidden layer L3), and $l$ (output layer L4) are highlighted beside them \cite{lecun2015deep}. }
 \label{fig:nn}
 \end{figure}
 
@@ -141,7 +141,7 @@ Calculating the gradients for the whole dataset to perform just one update can b
 \begin{figure}[!h]
 \centering
 \vspace{0.5cm}
-\includegraphics[width=0.9\columnwidth]{imgs/background/rnn.png}
+\includegraphics[width=0.8\columnwidth]{imgs/background/rnn.png}
 \caption{Diagram of a RNN \cite{olah2015understanding}.}
 \label{fig:rnn}
 \end{figure}
@@ -274,7 +274,7 @@ An autoencoder builds a latent space of a dataset $X$ with an encoder network $e
 
 \begin{figure}[!h]
  \centering
- \includegraphics[width=0.7\columnwidth]{imgs/background/ae_sampling.png}
+ \includegraphics[width=0.8\columnwidth]{imgs/background/ae_sampling.png}
  \caption{Sampling from the latent space built by an autoencoder \cite{rocca2019understanding}.}
  \label{fig:ae_sampling}
 \end{figure}
@@ -299,7 +299,7 @@ VirtuosoNet \cite{jeong2019virtuosonet} is a VAE designed to generate piano perf
 
 \begin{figure}[!h]
  \centering
- \includegraphics[width=\columnwidth]{imgs/background/gan.png}
+ \includegraphics[width=0.9\columnwidth]{imgs/background/gan.png}
  \caption{Diagram of a generative adversarial network \cite{silva2018intuitive}.}
  \label{fig:gan}
 \end{figure}
@@ -342,20 +342,20 @@ Currently, most prominent autoregressive strategies for music (and text) decodin
 
 \subsection{Top-k Sampling}
 
-In its most basic form, sampling consists of randomly picking the next token according to the conditional probability distribution given by the LM: $x_t \sim P(x_t|x_{1:t-1})$. Figure \ref{fig:topk} shows and example of text generation with the prior sequence $x = \{\textit{The}\}$. In the first step, the word \textit{car} is sampled from the condition probability distribution $P(x_1 | \textit{The})$ and, in the second step, the word \textit{drives} is sampled from $P(x_2 | \textit{The}, \textit{car})$.
+In its most basic form, sampling consists of randomly picking the next token according to the conditional probability distribution given by the LM: $x_t \sim P(x_t|x_{1:t-1})$. Figure \ref{fig:topk} shows and example of text generation with the prior sequence $x = \{\textit{The}\}$. In the first step, the word \textit{ant} is sampled from the condition probability distribution $P(x_2 | \textit{The})$ and, in the second step, the word \textit{sleeps} is sampled from $P(x_3 | \textit{The}, \textit{ant})$.
 
 \begin{figure}[!h]
  \centering
- \includegraphics[width=0.9\columnwidth]{imgs/background/sampling.png}
+ \includegraphics[width=\columnwidth]{imgs/background/sampling.png}
  \caption{Example of sampling with prior sequence $x = \{\textit{The}\}$ \cite{platen2020}.}
  \label{fig:topk}
 \end{figure}
 
-A simple trick called \textit{temperature} can be applied to control the confidence of the LM. It consists of dividing the LM output before the softmax activation by a parameter $t > 0$. Lower temperatures $t < 1$ make the model increasingly confident in its top choices, while $t > 1$ decreases confidence. Figure \ref{fig:temp} shows the previous example with temperature $t = 0.7$. The conditional probability $P(x_1 | \textit{The})$ of the first step becomes more confident, leaving almost no chance for the word \textit{car} to be selected. Thus, the word \textit{nice} is sampled first, followed by the word \textit{house}.
+A simple trick called \textit{temperature} can be applied to control the confidence of the LM. It consists of dividing the LM output before the softmax activation by a parameter $t > 0$. Lower temperatures $t < 1$ make the model increasingly confident in its top choices, while $t > 1$ decreases confidence. Figure \ref{fig:temp} shows the previous example with temperature $t = 0.7$. The conditional probability $P(x_2 | \textit{The})$ of the first step becomes more confident, leaving almost no chance for the word \textit{ant} to be selected. Thus, the word \textit{big} is sampled first, followed by the word \textit{dog}.
 
 \begin{figure}[!h]
  \centering
- \includegraphics[width=0.9\columnwidth]{imgs/background/temperature.png}
+ \includegraphics[width=\columnwidth]{imgs/background/temperature.png}
  \caption{Example of sampling with prior sequence $x = \{\textit{The}\}$ and temperature $t = 0.7$ \cite{platen2020}.}
  \label{fig:temp}
 \end{figure}
@@ -364,12 +364,12 @@ A simple trick called \textit{temperature} can be applied to control the confide
 
 \begin{figure}[!h]
  \centering
- \includegraphics[width=0.9\columnwidth]{imgs/background/topk.png}
+ \includegraphics[width=\columnwidth]{imgs/background/topk.png}
  \caption{Example of top-k sampling with $k=6$.}
  \label{fig:topk}
 \end{figure}
 
-In step $t=1$, the top-k sampling keeps the six words $\{\textit{nice}, \textit{dog}, \textit{car}, \textit{woman}, \textit{guy}, \textit{man}\}$ in the sampling pool, which encompass only two thirds of the probability mass. The words $\{\textit{people}, \textit{big}, \textit{house}, \textit{cat}\}$ are eliminated, even though they seem like reasonable candidates. In step $t=2$, the top six words represent almost all of the probability mass. Two of the selected words $\{\textit{down}, \textit{a}\}$ are arguably bad candidates. Nevertheless, the eliminated words $\{\textit{not}, \textit{the}, \textit{small}, \textit{told}\}$ are rather bad candidates and hence successfully eliminated. This example highlights that top-k sampling can jeopardize the LM, making it produce wrong sentences for sharp distributions and limiting the model's creativity for flat distributions.
+In the first step, the top-k sampling keeps the six words $\{\textit{big}, \textit{small}, \textit{cat}, \textit{dog}, \textit{boy}, \textit{man}\}$ in the sampling pool, which encompass only two thirds of the probability mass. The words $\{\textit{people}, \textit{tall}, \textit{house}, \textit{ant}\}$ are eliminated, even though they seem like reasonable candidates. In the second step, the top six words represent almost all of the probability mass. Three of the selected words $\{\textit{stops}, \textit{down}, \textit{a}\}$ are arguably bad candidates. Nevertheless, the eliminated words $\{\textit{not}, \textit{the}, \textit{small}, \textit{told}\}$ are rather bad candidates and hence successfully eliminated. This example highlights that top-k sampling can jeopardize the LM, making it produce wrong sentences for sharp distributions and limiting the model's creativity for flat distributions.
 
 \subsection{Top-p (Nucleus) Sampling}
 
@@ -382,21 +382,21 @@ Holtzman et. al. \cite{holtzman2019curious} proposed \textit{top-p (nucleus) sam
  \label{fig:topp}
 \end{figure}
 
-The nucleus for $p=92\%$ includes the nine most likely words in the first step and only three words in the second step. This example highlights that top-p sampling keeps a wide range of tokens in less predictable situations (e.g., step $t=1$) and a few tokens in more predictable situations (e.g., step $t=2$). Although top-p is theoretically more interesting than top-k, both methods work well in practice. Top-p can also be combined with top-k to avoid very low ranked tokens while allowing for some dynamic selection.
+The nucleus for $p=92\%$ includes the nine most likely words in the first step and only three words in the second step. This example highlights that top-p sampling keeps a wide range of tokens in less predictable situations (e.g., in the first step) and a few tokens in more predictable situations (e.g., in the second step). Although top-p is theoretically more interesting than top-k, both methods work well in practice. Top-p can also be combined with top-k to avoid very low ranked tokens while allowing for some dynamic selection.
 
 \subsection{Greedy Search}
 
 Greedy search selects the token with the highest probability at each generation step $t$: $x_t = argmax \, P(x_t|x_{1:t-1})$. Figure \ref{fig:greedy} shows a text generation example with greedy decoding and prior sequence $x = \{\textit{The}\}$.
-In step $t=1$, greedy search selects the word $\textit{nice}$, which has the highest probability among the three options $\{ \textit{dog}, \textit{nice}, \textit{car} \}$. In step $t=2$, the options are $\{ \textit{woman}, \textit{house}, \textit{guy} \}$ and hence the greedy search selects the word \textit{woman}. The final generated sentence is \textit{The nice woman} with a joint probability of $0.5*0.4=0.2$.
+In the first step, greedy search selects the word $\textit{nice}$, which has the highest probability among the three options $\{ \textit{dog}, \textit{nice}, \textit{car} \}$. In the second step, the options are $\{ \textit{woman}, \textit{house}, \textit{guy} \}$ and hence the greedy search selects the word \textit{woman}. The final generated sentence is \textit{The nice woman} with a joint probability of $0.5*0.4=0.2$.
 
 \begin{figure}[!h]
  \centering
- \includegraphics[width=0.7\columnwidth]{imgs/background/greedy.png}
+ \includegraphics[width=0.5\columnwidth]{imgs/background/greedy.png}
  \caption{Example of greedy search with prior sequence $x = \{\textit{The}\}$ \cite{platen2020}.}
  \label{fig:greedy}
 \end{figure}
 
-The problem with greedy search is that it misses high probability tokens ``hidden behind'' low probability ones. In this example, the global optimal solution is the sentence \textit{The dog has} (with joint probability $0.36$), but the word \textit{nice} has higher probability than \textit{dog} in step $t=1$. Thus, greedy search selects \textit{nice} and completely disregards the branch with the word \textit{dog} in step $t=2$.
+The problem with greedy search is that it misses high probability tokens ``hidden behind'' low probability ones. In this example, the global optimal solution is the sentence \textit{The dog has} (with joint probability $0.36$), but the word \textit{nice} has higher probability than \textit{dog} in the first step. Thus, greedy search selects \textit{nice} and completely disregards the branch with the word \textit{dog} in the second step.
 
 \subsection{Beam Search}
 
@@ -404,13 +404,13 @@ The problem with greedy search is that it misses high probability tokens ``hidde
 
 \begin{figure}[!h]
  \centering
- \includegraphics[width=0.7\columnwidth]{imgs/background/beam.png}
+ \includegraphics[width=0.5\columnwidth]{imgs/background/beam.png}
  \caption{Example of beam search with prior sequence $x = \{\textit{The}\}$ and
  beam size $b=2$ \cite{platen2020}.}
  \label{fig:beam}
 \end{figure}
 
-In step $t=1$, the two most likely sub-sequences are $\{ \textit{The}, \textit{dog} \}$ and $\{ \textit{The}, \textit{nice} \}$. In step $t=2$, beam search expands the beam from the previous step with the two most likely sub-sequences $\{ \textit{The}, \textit{dog}, \textit{has} \}$ and $\{ \textit{The}, \textit{nice}, \textit{woman} \}$. At the end of the second step, beam search returns the beam with highest probability, which is \textit{The dog has} with joint probability $0.36$. The solutions generated with beam search are always as good as or better (more likely according to the LM) than the sequences generated with greedy search. However, beam search is not guaranteed to find the optimal solution.
+In the first step, the two most likely sub-sequences are $\{ \textit{The}, \textit{dog} \}$ and $\{ \textit{The}, \textit{nice} \}$. In the second step, beam search expands the beam from the previous step with the two most likely sub-sequences $\{ \textit{The}, \textit{dog}, \textit{has} \}$ and $\{ \textit{The}, \textit{nice}, \textit{woman} \}$. At the end of the second step, beam search returns the beam with highest probability, which is \textit{The dog has} with joint probability $0.36$. The solutions generated with beam search are always as good as or better (more likely according to the LM) than the sequences generated with greedy search. However, beam search is not guaranteed to find the optimal solution.
 
 A common problem with beam search (and other search-based approaches) is that the decoded sequences tend to become repetitive in a few generation steps \cite{holtzman2019curious}. This problem can be alleviated by combining beam search with sampling (including top-k and top-p) to create a \textit{stochastic beam search} \cite{poole2010artificial}. In this case, the sub-sequences are sampled at each time step according to their joint probability, instead of selected greedly.
 
